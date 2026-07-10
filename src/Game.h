@@ -4,6 +4,9 @@
 #include "Scene.h"
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_mixer.h>
+#include <SDL_ttf.h>
+#include <string>
 
 class Game
 {
@@ -22,6 +25,7 @@ public:
     void handleEvent(SDL_Event* event);
     void update(float deltaTime);
     void render();
+    SDL_Point renderTextCentered(std::string text, float posY, bool isTitle);
 
     //getting
     SDL_Renderer* getRenderer() { return renderer; }
@@ -54,6 +58,9 @@ private:
     const int PLAY_AREA_W = 600;
     const int PLAY_AREA_H = 800;
     
+    //字体相关
+    TTF_Font* titleFont = nullptr;
+    TTF_Font* textFont = nullptr;
 
 };
 

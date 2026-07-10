@@ -1,4 +1,5 @@
 #include "SceneMain.h"
+#include "SceneTitle.h"
 #include "Game.h"
 #include <nlohmann/json.hpp>
 
@@ -104,6 +105,14 @@ void SceneMain::init()
 
 void SceneMain::handleEvent(SDL_Event *event)
 {
+    if(event->type == SDL_KEYDOWN)
+    {
+        if(event->key.keysym.scancode == SDL_SCANCODE_ESCAPE)
+        {
+            SceneTitle* sceneTitle = new SceneTitle();
+            game.changeScene(sceneTitle);
+        }
+    }
 }
 
 void SceneMain::update(float deltaTime)

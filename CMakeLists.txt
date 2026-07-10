@@ -42,7 +42,8 @@ add_executable(${TARGET}
                 "src/main.cpp"
                 "src/Game.cpp"
                 "src/Scene.cpp"
-                "src/SceneMain.cpp")
+                "src/SceneMain.cpp"
+                "src/SceneTitle.cpp")
 
 #链接库
 target_link_libraries(${TARGET}

@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "SceneTitle.h"
 #include "SceneMain.h"
 
 Game::Game()
@@ -20,6 +21,7 @@ void Game::init()
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL init Error: %s\n", SDL_GetError());
         isRunning = false;
     }
+
     //创建窗口和渲染器
     window = SDL_CreateWindow("text", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_W, WINDOW_H, SDL_WINDOW_SHOWN);
     if(window == nullptr)
@@ -33,14 +35,52 @@ void Game::init()
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "renderer init Error: %s\n", SDL_GetError());
         isRunning = false;
     }
+
     //初始化SDL_image
     if(IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG)
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_image init Error: %s\n", IMG_GetError());
         isRunning = false;
     }
+    
+    //初始化SDL_mixer
+    if(Mix_Init(MIX_INIT_MP3 | MIX_INIT_OGG) != (MIX_INIT_MP3 | MIX_INIT_OGG))
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
+        isRunning = false;
+    }
 
-    currentScene = new SceneMain;
+    //初始化SDL_ttf
+    if(TTF_Init() == -1)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
+        isRunning = false;
+    }
+
+    //打开音频设备
+    if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_mixer could not open audio! SDL_mixer Error: %s\n", Mix_GetError());
+        isRunning = false;
+    }
+    
+    //设置音效channel数量
+    Mix_AllocateChannels(32);
+
+    //设置音量
+    Mix_VolumeMusic(MIX_MAX_VOLUME / 4);//音乐
+    Mix_Volume(-1, MIX_MAX_VOLUME / 8);//音效
+
+    //载入字体
+    titleFont = TTF_OpenFont("assets/font/VonwaonBitmap-16px.ttf", 64);
+    textFont = TTF_OpenFont("assets/font/VonwaonBitmap-16px.ttf", 32);
+    if(titleFont == nullptr || textFont == nullptr)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "TTF_OpenFont: %s\n", TTF_GetError());
+        isRunning = false;
+    }
+
+    currentScene = new SceneTitle;
     currentScene->init();
 }
 
@@ -81,6 +121,22 @@ void Game::clean()
     //清理SDL_image
     IMG_Quit();
 
+    //清理字体
+    if(titleFont != nullptr)
+    {
+        TTF_CloseFont(titleFont);
+    }
+    if(textFont != nullptr)
+    {
+        TTF_CloseFont(textFont);
+    }
+
+    //清理SDL_mixer
+    Mix_CloseAudio();
+    Mix_Quit();
+
+    //清理SDL_ttf
+    TTF_Quit();
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
@@ -125,4 +181,30 @@ void Game::render()
 
     //显示更新
     SDL_RenderPresent(renderer);
+}
+
+SDL_Point Game::renderTextCentered(std::string text, float posY, bool isTitle)
+{
+    SDL_Color color = {255, 255, 255, 255};
+    SDL_Surface* surface;
+    if(isTitle)
+    {
+        surface = TTF_RenderUTF8_Solid(titleFont, text.c_str(), color);
+    }
+    else
+    {
+        surface = TTF_RenderUTF8_Solid(textFont, text.c_str(), color);
+    }
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(getRenderer(), surface);
+    int y = static_cast<int>((getWindowHeight() - surface->h) * posY);
+    SDL_Rect rect = {
+        getWindowWidth() / 2 - surface->w / 2,
+        y,
+        surface->w,
+        surface->h
+    };
+    SDL_RenderCopy(getRenderer(), texture, nullptr, &rect);
+    SDL_FreeSurface(surface);
+    SDL_DestroyTexture(texture);
+    return {rect.x + rect.w, rect.y};
 }
