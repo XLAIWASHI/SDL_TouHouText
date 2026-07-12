@@ -2,6 +2,7 @@
 #define SCENE_TITLE_H
 
 #include "Scene.h"
+#include "Object.h"
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_mixer.h>
@@ -17,8 +18,18 @@ public:
     void clean() override;
 
 private:
+    void renderBackground();
+    void renderTitle1();
+
     Mix_Music* bgm = nullptr;
+    Background background;
+    Title title;
     float timer = 0.0f;
+
+    
+
+
+    
 };
 
 #endif

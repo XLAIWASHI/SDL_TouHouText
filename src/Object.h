@@ -122,6 +122,14 @@ struct Background
     int height = 0;
 };
 
+struct Title
+{
+    SDL_Texture* texture = nullptr;
+    SDL_FPoint position = {0.0f, 0.0f};
+    int width = 0;
+    int height = 0;
+};
+
 struct PlayArea
 {
     SDL_Texture* texture = nullptr;

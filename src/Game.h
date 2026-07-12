@@ -25,7 +25,7 @@ public:
     void handleEvent(SDL_Event* event);
     void update(float deltaTime);
     void render();
-    SDL_Point renderTextCentered(std::string text, float posY, bool isTitle);
+    SDL_Point renderTextCentered(std::string text, float posY, bool isTitle, SDL_Color color);
 
     //getting
     SDL_Renderer* getRenderer() { return renderer; }

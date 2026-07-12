@@ -183,9 +183,8 @@ void Game::render()
     SDL_RenderPresent(renderer);
 }
 
-SDL_Point Game::renderTextCentered(std::string text, float posY, bool isTitle)
+SDL_Point Game::renderTextCentered(std::string text, float posY, bool isTitle, SDL_Color color)
 {
-    SDL_Color color = {255, 255, 255, 255};
     SDL_Surface* surface;
     if(isTitle)
     {
