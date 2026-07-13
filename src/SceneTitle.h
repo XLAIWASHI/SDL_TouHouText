@@ -20,16 +20,32 @@ public:
 private:
     void renderBackground();
     void renderTitle1();
+    void renderTitleMenu();
 
     Mix_Music* bgm = nullptr;
     Background background;
     Title title;
-    float timer = 0.0f;
+    Title title_menu;
 
+    //当前按钮状态
+    TitleButtonType state = TitleButtonType::star;
+
+    const float mult = 2.5f; // 按钮放大倍数
+    const int TITLE_MENU_STAR_W = 80;
+    const int TITLE_MENU_STAR_H = 32;
+
+    const int TITLE_MENU_QUIT_W = 64;
+    const int TITLE_MENU_QUIT_H = 32;
+    const int TITLE_MENU_QUIT_X = 384;
+    const int TITLE_MENU_QUIT_Y = 160;
     
+    const int TITLE_MENU_OPTION_W = 96;
+    const int TITLE_MENU_OPTION_H = 32;
+    const int TITLE_MENU_OPTION_X = 400;
+    const int TITLE_MENU_OPTION_Y = 416;
 
+    const int margin = 521;
 
-    
 };
 
 #endif

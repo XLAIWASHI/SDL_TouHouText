@@ -40,6 +40,14 @@ enum class ItemType
     
 };
 
+enum class TitleButtonType
+{
+    star,
+    option,
+    quit,
+    COUNT
+};
+
 struct Player
 {
     SDL_Texture* texture = nullptr;
