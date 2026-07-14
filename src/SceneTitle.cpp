@@ -1,5 +1,6 @@
 #include "SceneTitle.h"
 #include "SceneMain.h"
+#include "SceneOption.h"
 #include "Game.h"
 
 void SceneTitle::init()
@@ -72,7 +73,8 @@ void SceneTitle::handleEvent(SDL_Event *event)
             }
             else if(state == TitleButtonType::option)
             {
-
+                SceneOption* sceneOption = new SceneOption();
+                game.changeScene(sceneOption);
             }
             else if(state == TitleButtonType::quit)
             {
