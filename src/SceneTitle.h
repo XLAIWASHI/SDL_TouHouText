@@ -31,6 +31,7 @@ private:
     TitleButtonType state = TitleButtonType::star;
 
     const float mult = 2.5f; // 按钮放大倍数
+    
     const int TITLE_MENU_STAR_W = 80;
     const int TITLE_MENU_STAR_H = 32;
 

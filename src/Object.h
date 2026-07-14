@@ -48,6 +48,15 @@ enum class TitleButtonType
     COUNT
 };
 
+enum class OptionButtonType
+{
+    vol,
+    sevol,
+    mode,
+    quit,
+    COUNT
+};
+
 struct Player
 {
     SDL_Texture* texture = nullptr;
