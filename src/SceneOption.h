@@ -7,6 +7,9 @@
 #include <SDL_image.h>
 #include <SDL_mixer.h>
 #include <SDL_ttf.h>
+#include <fstream>
+#include <vector>
+#include <string>
 
 class SceneOption : public Scene
 {
@@ -21,11 +24,26 @@ public:
     void clean() override;
 
 private:
+    void renderBackGround();
+    void renderButton();
+
+    void loadOptionItemFile();
+
     Background background;
     Title title;
 
-    void renderBackGround();
-    void renderButton();
+    struct OptionItem
+    {
+        OptionButtonType type;
+        SDL_Rect src;
+        SDL_Rect dst;
+        std::vector<OptionItem> variants;
+        int currentVariant = 0; //子选项索引
+    };
+    
+    std::vector<OptionItem> options;
+    OptionButtonType state = OptionButtonType::vol;
+    
 
     const float mult = 2.5f; // 按钮放大倍数
 
@@ -43,6 +61,16 @@ private:
     const int BTN_MODE_Y = 128;
     const int BTN_MODE_W = 80;
     const int BTN_MODE_H = 32;
+
+    const int BTN_MODE_FULLSCEEN_X = 336;
+    const int BTN_MODE_FULLSCEEN_Y = 288;
+    const int BTN_MODE_FULLSCEEN_W = 144;
+    const int BTN_MODE_FULLSCEEN_H = 32;
+
+    const int BTN_MODE_WINDOW_X = 224;
+    const int BTN_MODE_WINDOW_Y = 288;
+    const int BTN_MODE_WINDOW_W = 112;
+    const int BTN_MODE_WINDOW_H = 32;
 
     const int BTN_QUIT_X = 384;
     const int BTN_QUIT_Y = 160;
