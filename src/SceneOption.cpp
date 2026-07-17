@@ -16,8 +16,12 @@ SceneOption::~SceneOption()
 
 void SceneOption::init()
 {
+    start_x = game.getWindowWidth() * 0.1f;
+    start_y = game.getWindowHeight() * 0.3f;
     //加载optionitem.json
     loadOptionItemFile();
+    //同步设置
+    SyncSettings();
     //加载背景图片
     background.texture = IMG_LoadTexture(game.getRenderer(), "assets\\image\\title\\star.png");
     if(background.texture == nullptr)
@@ -41,6 +45,7 @@ void SceneOption::handleEvent(SDL_Event *event)
 {
     if(event->type == SDL_KEYDOWN)
     {
+        // 上下键
         if(event->key.keysym.scancode == SDL_SCANCODE_UP || event->key.keysym.scancode == SDL_SCANCODE_W)
         {
             state = (OptionButtonType)((static_cast<int>(state) - 1 + static_cast<int>(OptionButtonType::COUNT)) % static_cast<int>(OptionButtonType::COUNT));
@@ -56,13 +61,50 @@ void SceneOption::handleEvent(SDL_Event *event)
             if(state == OptionButtonType::quit)
             {
                 SceneTitle* sceneTitle = new SceneTitle();
+                game.saveSetting();
                 game.changeScene(sceneTitle);
+            }
+            
+        }
+        // 左右键
+        if(event->key.keysym.scancode == SDL_SCANCODE_LEFT || event->key.keysym.scancode == SDL_SCANCODE_A)
+        {
+            OptionItem* opt = getCurrentOptionItem();
+            Settings* settings = game.getSettings();
+            if(!opt)
+            {
+                return;
             }
             if(state == OptionButtonType::mode)
             {
+                int index = opt->currentVariant;
+                int size = opt->variants.size();
+                opt->currentVariant = ((index - 1) + size) % size;
+                settings->mode = (opt->currentVariant == 0);
+                game.applySetting();
+            }
+            
 
+        }
+        if(event->key.keysym.scancode == SDL_SCANCODE_RIGHT || event->key.keysym.scancode == SDL_SCANCODE_D)
+        {
+            OptionItem* opt = getCurrentOptionItem();
+            Settings* settings = game.getSettings();
+            if(!opt)
+            {
+                return;
+            }
+            if(state == OptionButtonType::mode)
+            {
+                int index = opt->currentVariant;
+                int size = opt->variants.size();
+                opt->currentVariant = (index + 1) % size;
+                settings->mode = (opt->currentVariant == 0);
+                game.applySetting();
             }
         }
+        
+
     }
 }
 
@@ -75,7 +117,8 @@ void SceneOption::render()
     //渲染背景
     renderBackGround();
     //渲染按钮
-    renderButton();
+    //renderButton();
+    renderOptionsButton();
 }
 
 void SceneOption::clean()
@@ -96,123 +139,39 @@ void SceneOption::renderBackGround()
     SDL_RenderCopy(game.getRenderer(), background.texture, nullptr, nullptr);
 }
 
-void SceneOption::renderButton()
+void SceneOption::renderOptionsButton()
 {
-    //vol
-    int vol_x = game.getWindowWidth() * 0.1f;
-    int vol_y = game.getWindowHeight() * 0.3f;
-    SDL_Rect srcVolRect = {BTN_VOL_X, BTN_VOL_Y, BTN_VOL_W, BTN_VOL_H};
-    SDL_Rect dstVolRect = {
-        vol_x,
-        vol_y,
-        static_cast<int>(BTN_VOL_W * mult),
-        static_cast<int>(BTN_VOL_H * mult)
-    };
-
-    if(state == OptionButtonType::vol)
+    if(options.empty())
     {
-        SDL_SetTextureColorMod(title.texture, 255, 255, 255);
+        return;
     }
-    else
+    for(int i = 0; i < options.size(); i++)
     {
-        SDL_SetTextureColorMod(title.texture, 100, 100, 100);
+        if(!options[i].variants.empty())
+        {
+            for(int j = 0; j < options[i].variants.size(); j++)
+            {
+                if(options[i].currentVariant == j)
+                {
+                    SDL_SetTextureColorMod(title.texture, 255, 255, 255);
+                }
+                else
+                {
+                    SDL_SetTextureColorMod(title.texture, 100, 100, 100);
+                }
+                SDL_RenderCopy(game.getRenderer(), title.texture, &options[i].variants[j].src, &options[i].variants[j].dst);
+            }
+        }
+        if((OptionButtonType)state == options[i].type)
+        {
+            SDL_SetTextureColorMod(title.texture, 255, 255, 255);
+        }
+        else
+        {
+            SDL_SetTextureColorMod(title.texture, 100, 100, 100);
+        }
+        SDL_RenderCopy(game.getRenderer(), title.texture, &options[i].src, &options[i].dst);
     }
-
-    SDL_RenderCopy(game.getRenderer(), title.texture, &srcVolRect, &dstVolRect);
-    //此处留空
-
-    //sevol
-    int sevol_x = vol_x;
-    int sevol_y = vol_y + BTN_VOL_H * mult;
-    SDL_Rect srcSEVolRect = {BTN_SEVOL_X, BTN_SEVOL_Y, BTN_SEVOL_W, BTN_SEVOL_H};
-    SDL_Rect dstSEVolRect = {
-        sevol_x,
-        sevol_y,
-        static_cast<int>(BTN_SEVOL_W * mult),
-        static_cast<int>(BTN_SEVOL_H * mult)
-    };
-
-    if(state == OptionButtonType::sevol)
-    {
-        SDL_SetTextureColorMod(title.texture, 255, 255, 255);
-    }
-    else
-    {
-        SDL_SetTextureColorMod(title.texture, 100, 100, 100);
-    }
-
-    SDL_RenderCopy(game.getRenderer(), title.texture, &srcSEVolRect, &dstSEVolRect);
-    //此处留空
-
-    //mode
-    int mode_x = vol_x;
-    int mode_y = sevol_y + BTN_SEVOL_H * mult;
-    SDL_Rect srcModeRect = {BTN_MODE_X, BTN_MODE_Y, BTN_MODE_W, BTN_MODE_H};
-    SDL_Rect dstModeRect = {
-        mode_x,
-        mode_y,
-        static_cast<int>(BTN_MODE_W * mult),
-        static_cast<int>(BTN_MODE_H * mult)
-    };
-
-    if(state == OptionButtonType::mode)
-    {
-        SDL_SetTextureColorMod(title.texture, 255, 255, 255);
-    }
-    else
-    {
-        SDL_SetTextureColorMod(title.texture, 100, 100, 100);
-    }
-
-    SDL_RenderCopy(game.getRenderer(), title.texture, &srcModeRect, &dstModeRect);
-
-    //fullsceen
-    int mode_fullsceen_x = vol_x + BTN_MODE_W * mult;
-    int mode_fullsceen_y = mode_y;
-    SDL_Rect srcMode_fullScreenRect = {BTN_MODE_FULLSCEEN_X, BTN_MODE_FULLSCEEN_Y, BTN_MODE_FULLSCEEN_W, BTN_MODE_FULLSCEEN_H};
-    SDL_Rect dstMode_fullScreenRect = {
-        mode_fullsceen_x,
-        mode_fullsceen_y,
-        static_cast<int>(BTN_MODE_FULLSCEEN_W * mult),
-        static_cast<int>(BTN_MODE_FULLSCEEN_H * mult)
-    };
-    SDL_RenderCopy(game.getRenderer(), title.texture, &srcMode_fullScreenRect, &dstMode_fullScreenRect);
-    
-    //window
-    int mode_window_x = mode_fullsceen_x + BTN_MODE_FULLSCEEN_W * mult;
-    int mode_window_y = mode_y;
-    SDL_Rect srcMode_windowRect = {BTN_MODE_WINDOW_X, BTN_MODE_WINDOW_Y, BTN_MODE_WINDOW_W, BTN_MODE_WINDOW_H};
-    SDL_Rect dstMode_windowRect = {
-        mode_window_x,
-        mode_window_y,
-        static_cast<int>(BTN_MODE_WINDOW_W * mult),
-        static_cast<int>(BTN_MODE_WINDOW_H * mult)
-    };
-    SDL_RenderCopy(game.getRenderer(), title.texture, &srcMode_windowRect, &dstMode_windowRect);
-    //此处留空
-
-    //quit
-    int quit_x = vol_x;
-    int quit_y = mode_y + BTN_MODE_H * mult;
-    SDL_Rect srcQuitRect = {BTN_QUIT_X, BTN_QUIT_Y, BTN_QUIT_W, BTN_QUIT_H};
-    SDL_Rect dstQuitRect = {
-        quit_x,
-        quit_y,
-        static_cast<int>(BTN_QUIT_W * mult),
-        static_cast<int>(BTN_QUIT_H * mult)
-    };
-
-    if(state == OptionButtonType::quit)
-    {
-        SDL_SetTextureColorMod(title.texture, 255, 255, 255);
-    }
-    else
-    {
-        SDL_SetTextureColorMod(title.texture, 100, 100, 100);
-    }
-
-    SDL_RenderCopy(game.getRenderer(), title.texture, &srcQuitRect, &dstQuitRect);
-    //此处留空
 }
 
 void SceneOption::loadOptionItemFile()
@@ -230,7 +189,7 @@ void SceneOption::loadOptionItemFile()
 
     //清理旧数据
     options.clear();
-
+    int index = 0;
     for(auto& item : data["option"])
     {
         OptionItem opt;
@@ -242,8 +201,16 @@ void SceneOption::loadOptionItemFile()
             item["src"]["w"].get<int>(),
             item["src"]["h"].get<int>()
         };
+        opt.dst = {
+            start_x,
+            static_cast<int>(start_y + index * spacingY * mult),
+            static_cast<int>(opt.src.w * mult),
+            static_cast<int>(opt.src.h * mult)
+        };
         if(item.contains("variants")) //判断是否存在这个键
         {
+            int pre_w = opt.dst.w;
+            int pre_x = opt.dst.x;
             for(auto& v : item["variants"])
             {
                 OptionItem variant;
@@ -255,11 +222,43 @@ void SceneOption::loadOptionItemFile()
                     v["src"]["w"].get<int>(),
                     v["src"]["h"].get<int>()
                 };
+                variant.dst = {
+                    static_cast<int>(pre_x + pre_w),
+                    opt.dst.y,
+                    static_cast<int>(variant.src.w * mult),
+                    static_cast<int>(variant.src.h * mult)
+                };
                 opt.variants.push_back(variant);
+                pre_w = variant.dst.w;
+                pre_x = variant.dst.x;
             }
         }
         options.push_back(opt);
+        ++index;
     }
     state = OptionButtonType::vol;
 }
 
+void SceneOption::SyncSettings()
+{
+    //同步mode
+    for(auto& opt : options)
+    {
+        if(opt.type == OptionButtonType::mode && !opt.variants.empty())
+        {
+            opt.currentVariant = game.getSettings()->mode ? 0 : 1;
+            return;
+        }
+    }
+}
+
+OptionItem* SceneOption::getCurrentOptionItem()
+{
+    if(options.empty()) return nullptr;
+    for (auto& opt : options) {
+        if (opt.type == state) {
+            return &opt;
+        }
+    }
+    return nullptr;
+}

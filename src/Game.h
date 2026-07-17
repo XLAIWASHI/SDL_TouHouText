@@ -2,6 +2,7 @@
 #define GAME_H
 
 #include "Scene.h"
+#include "Object.h"
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_mixer.h>
@@ -35,11 +36,21 @@ public:
     int getPlayAreaWidth() { return PLAY_AREA_W; }
     int getPlayAreaHeight() { return PLAY_AREA_H; }
     bool& getIsRunning() { return isRunning; }
+    Settings* getSettings() { return &settings; }
+
+    void saveSetting();
+    void applySetting();
+    //音乐相关
+    void playBGM(const std::string& path);
 
 private:
+    void loadSetting();
     Game();
     Game(const Game&) = delete;
     Game& operator=(const Game&) = delete;
+    Mix_Music* bgm = nullptr;
+    std::string currentBgmPath = "";
+    Settings settings;// 设置
 
     bool isRunning = true;//游戏是否运行
 

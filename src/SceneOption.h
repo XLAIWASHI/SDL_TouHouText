@@ -25,57 +25,27 @@ public:
 
 private:
     void renderBackGround();
-    void renderButton();
+    void renderOptionsButton();
 
     void loadOptionItemFile();
+    void SyncSettings();// 同步设置
+    //getting
+    OptionItem* getCurrentOptionItem();
 
     Background background;
     Title title;
 
-    struct OptionItem
-    {
-        OptionButtonType type;
-        SDL_Rect src;
-        SDL_Rect dst;
-        std::vector<OptionItem> variants;
-        int currentVariant = 0; //子选项索引
-    };
     
     std::vector<OptionItem> options;
     OptionButtonType state = OptionButtonType::vol;
     
-
+    int start_x = 0;
+    int start_y = 0;
+    const int spacingX = 144;// X间距
+    const int spacingY = 32;// Y间距
+    
     const float mult = 2.5f; // 按钮放大倍数
 
-    const int BTN_VOL_X = 449;
-    const int BTN_VOL_Y = 161;
-    const int BTN_VOL_W = 64;
-    const int BTN_VOL_H = 32;
-
-    const int BTN_SEVOL_X = 288;
-    const int BTN_SEVOL_Y = 128;
-    const int BTN_SEVOL_W = 96;
-    const int BTN_SEVOL_H = 32;
-
-    const int BTN_MODE_X = 384;
-    const int BTN_MODE_Y = 128;
-    const int BTN_MODE_W = 80;
-    const int BTN_MODE_H = 32;
-
-    const int BTN_MODE_FULLSCEEN_X = 336;
-    const int BTN_MODE_FULLSCEEN_Y = 288;
-    const int BTN_MODE_FULLSCEEN_W = 144;
-    const int BTN_MODE_FULLSCEEN_H = 32;
-
-    const int BTN_MODE_WINDOW_X = 224;
-    const int BTN_MODE_WINDOW_Y = 288;
-    const int BTN_MODE_WINDOW_W = 112;
-    const int BTN_MODE_WINDOW_H = 32;
-
-    const int BTN_QUIT_X = 384;
-    const int BTN_QUIT_Y = 160;
-    const int BTN_QUIT_W = 64;
-    const int BTN_QUIT_H = 32;
 };
 
 #endif

@@ -2,6 +2,7 @@
 #define OBJECT_H
 
 #include <SDL.h>
+#include <vector>
 
 enum class PlayerAnimationType
 {
@@ -55,6 +56,22 @@ enum class OptionButtonType
     mode,
     quit,
     COUNT
+};
+
+struct Settings
+{
+    int vol = 100;
+    int sevol = 100;
+    bool mode = false;
+};
+
+struct OptionItem
+{
+    OptionButtonType type;
+    SDL_Rect src;
+    SDL_Rect dst;
+    std::vector<OptionItem> variants;
+    int currentVariant; //子选项索引
 };
 
 struct Player

@@ -22,7 +22,6 @@ private:
     void renderTitle1();
     void renderTitleMenu();
 
-    Mix_Music* bgm = nullptr;
     Background background;
     Title title;
     Title title_menu;

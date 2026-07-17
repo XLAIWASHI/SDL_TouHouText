@@ -6,13 +6,7 @@
 void SceneTitle::init()
 {
     // bgm = Mix_LoadMUS("assets/music/bgm/Evan Call - The Magic Within.mp3");
-    bgm = Mix_LoadMUS("assets\\music\\bgm\\th08_01.mid");
-    if(bgm == nullptr)
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load music: %s", Mix_GetError());
-        game.getIsRunning() = false;
-        return;
-    }
+    game.playBGM("assets\\music\\bgm\\th08_01.mid");
 
     //加载背景图片
     background.texture = IMG_LoadTexture(game.getRenderer(), "assets\\image\\title\\star.png");
@@ -45,9 +39,6 @@ void SceneTitle::init()
         return;
     }
     SDL_QueryTexture(title_menu.texture, nullptr, nullptr, &title_menu.width, &title_menu.height);
-
-    //播放音乐
-    Mix_PlayMusic(bgm, -1);
 }
 
 void SceneTitle::handleEvent(SDL_Event *event)
@@ -102,12 +93,6 @@ void SceneTitle::render()
 
 void SceneTitle::clean()
 {
-    if(bgm != nullptr)
-    {
-        Mix_HaltMusic();
-        Mix_FreeMusic(bgm);
-    }
-
     if(background.texture != nullptr)
     {
         SDL_DestroyTexture(background.texture);
