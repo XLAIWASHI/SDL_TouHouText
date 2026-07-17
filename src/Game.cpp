@@ -31,16 +31,16 @@ void Game::applySetting()
     Mix_Volume(-1, settings.sevol);
 
     //全屏
-    if (settings.mode) {
+    if(settings.mode)
+    {
+        SDL_RenderSetLogicalSize(renderer, WINDOW_W, WINDOW_H);
         SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-    } else {
+    }
+    else
+    {
         SDL_SetWindowFullscreen(window, 0);
-        // 强制设置窗口尺寸
-        SDL_SetWindowSize(window, WINDOW_W, WINDOW_H);
-        // 可选：将窗口居中显示
         SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
     }
-    SDL_RenderSetLogicalSize(renderer, WINDOW_W, WINDOW_H);
 }
 
 void Game::playBGM(const std::string &path)
@@ -95,16 +95,17 @@ void Game::loadSetting()
     Mix_VolumeMusic(settings.vol);
     Mix_Volume(-1, settings.sevol);
 
+    //全屏
     if(settings.mode)
     {
+        SDL_RenderSetLogicalSize(renderer, WINDOW_W, WINDOW_H);
         SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
     }
     else
     {
         SDL_SetWindowFullscreen(window, 0);
-        SDL_SetWindowSize(window, WINDOW_W, WINDOW_H);
+        SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
     }
-    SDL_RenderSetLogicalSize(renderer, getWindowWidth(), getWindowHeight());
 }
 
 Game::Game()

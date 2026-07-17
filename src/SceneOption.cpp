@@ -3,6 +3,7 @@
 #include "Game.h"
 #include "Utils.h"
 #include <nlohmann/json.hpp>
+#include <algorithm>
 
 using json = nlohmann::json;
 
@@ -78,13 +79,21 @@ void SceneOption::handleEvent(SDL_Event *event)
             if(state == OptionButtonType::mode)
             {
                 int index = opt->currentVariant;
-                int size = opt->variants.size();
+                int size = static_cast<int>(opt->variants.size());
                 opt->currentVariant = ((index - 1) + size) % size;
                 settings->mode = (opt->currentVariant == 0);
                 game.applySetting();
             }
-            
-
+            if(state == OptionButtonType::vol)
+            {
+                settings->vol = std::max(0, settings->vol - 8);
+                game.applySetting();
+            }
+            if(state == OptionButtonType::sevol)
+            {
+                settings->sevol = std::max(0, settings->sevol - 8);
+                game.applySetting();
+            }
         }
         if(event->key.keysym.scancode == SDL_SCANCODE_RIGHT || event->key.keysym.scancode == SDL_SCANCODE_D)
         {
@@ -97,14 +106,22 @@ void SceneOption::handleEvent(SDL_Event *event)
             if(state == OptionButtonType::mode)
             {
                 int index = opt->currentVariant;
-                int size = opt->variants.size();
+                int size = static_cast<int>(opt->variants.size());
                 opt->currentVariant = (index + 1) % size;
                 settings->mode = (opt->currentVariant == 0);
                 game.applySetting();
             }
+            if(state == OptionButtonType::vol)
+            {
+                settings->vol = std::min(128, settings->vol + 8);
+                game.applySetting();
+            }
+            if(state == OptionButtonType::sevol)
+            {
+                settings->sevol = std::min(128, settings->sevol + 8);
+                game.applySetting();
+            }
         }
-        
-
     }
 }
 
@@ -117,7 +134,6 @@ void SceneOption::render()
     //渲染背景
     renderBackGround();
     //渲染按钮
-    //renderButton();
     renderOptionsButton();
 }
 
@@ -171,7 +187,55 @@ void SceneOption::renderOptionsButton()
             SDL_SetTextureColorMod(title.texture, 100, 100, 100);
         }
         SDL_RenderCopy(game.getRenderer(), title.texture, &options[i].src, &options[i].dst);
+
+        //音量数值
+        SDL_SetTextureColorMod(title.texture, 255, 255, 255);
+        if(options[i].type == OptionButtonType::vol)
+        {
+            int value = game.getSettings()->vol;
+            int x = options[i].dst.x + static_cast<int>(optionMaxW * mult);
+            int y = options[i].dst.y;
+            renderNumberAsPercent(value, x, y);
+        }
+        if(options[i].type == OptionButtonType::sevol)
+        {
+            int value = game.getSettings()->sevol;
+            int x = options[i].dst.x + static_cast<int>(optionMaxW * mult);
+            int y = options[i].dst.y;
+            renderNumberAsPercent(value, x, y);
+        }
     }
+}
+
+void SceneOption::renderDigit(int digit, int x, int y)
+{
+    if(digit < 0 || digit > 9) return;
+    SDL_Rect src = {
+        digitStarX + digitW * digit,
+        digitStarY,
+        digitW,
+        digitH
+    };
+    SDL_Rect dst = {x, y, static_cast<int>(digitW * mult), static_cast<int>(digitH * mult)};
+    SDL_RenderCopy(game.getRenderer(), title.texture, &src, &dst);
+}
+
+void SceneOption::renderNumberAsPercent(int value, int x, int y)
+{
+    int percent = (value * 100) / 128;
+    std::string numStr = std::to_string(percent);
+    
+    for(char c : numStr)
+    {
+        int digit = c - '0';
+        renderDigit(digit, x, y);
+        x += static_cast<int>(digitW * mult);
+    }
+
+    // 渲染百分号
+    SDL_Rect srcPercent = {percentX, percentY, percentW, percentH};
+    SDL_Rect dstPercent = {x, y, static_cast<int>(percentW * mult), static_cast<int>(percentH * mult)};
+    SDL_RenderCopy(game.getRenderer(), title.texture, &srcPercent, &dstPercent);
 }
 
 void SceneOption::loadOptionItemFile()
@@ -186,6 +250,19 @@ void SceneOption::loadOptionItemFile()
 
     json data;
     file >> data;
+
+    //数据
+    optionMaxW = data["optionMaxW"].get<int>();
+
+    //音量数值相关
+    digitStarX = data["digits"]["startX"].get<int>();
+    digitStarY = data["digits"]["startY"].get<int>();
+    digitW = data["digits"]["width"].get<int>();
+    digitH = data["digits"]["height"].get<int>();
+    percentX = data["percent"]["percentX"].get<int>();
+    percentY = data["percent"]["percentY"].get<int>();
+    percentW = data["percent"]["percentW"].get<int>();
+    percentH = data["percent"]["percentH"].get<int>();
 
     //清理旧数据
     options.clear();
@@ -209,8 +286,8 @@ void SceneOption::loadOptionItemFile()
         };
         if(item.contains("variants")) //判断是否存在这个键
         {
-            int pre_w = opt.dst.w;
             int pre_x = opt.dst.x;
+            int pre_w = optionMaxW * mult;
             for(auto& v : item["variants"])
             {
                 OptionItem variant;
