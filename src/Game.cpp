@@ -1,6 +1,112 @@
 #include "Game.h"
 #include "SceneTitle.h"
 #include "SceneMain.h"
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
+void Game::saveSetting()
+{
+    json data;
+    data["vol"] = settings.vol;
+    data["sevol"] = settings.sevol;
+    data["mode"] = settings.mode;
+
+    std::ofstream file("data\\setting.json");
+    if(file.is_open())
+    {
+        file << data.dump(4);
+        file.close();
+    }
+    else
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to save settings.json");
+    }
+}
+
+void Game::applySetting()
+{
+    //音量
+    Mix_VolumeMusic(settings.vol);
+    Mix_Volume(-1, settings.sevol);
+
+    //全屏
+    if(settings.mode)
+    {
+        SDL_RenderSetLogicalSize(renderer, WINDOW_W, WINDOW_H);
+        SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    }
+    else
+    {
+        SDL_SetWindowFullscreen(window, 0);
+        SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+    }
+}
+
+void Game::playBGM(const std::string &path)
+{
+    if(currentBgmPath == path) return;
+
+    //释放旧音乐
+    if(bgm)
+    {
+        Mix_HaltMusic();
+        Mix_FreeMusic(bgm);
+        bgm = nullptr;
+    }
+
+    //加载并播放新音乐
+    bgm = Mix_LoadMUS(path.c_str());
+    if(bgm)
+    {
+        Mix_PlayMusic(bgm, -1);
+        currentBgmPath = path;
+    }
+    else
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load BGM: %s", Mix_GetError());
+        isRunning = false;
+        return;
+    }
+
+}
+
+void Game::loadSetting()
+{
+    std::ifstream file("data\\setting.json");
+    if(!file.is_open())
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Open Setting Error: %s", SDL_GetError);
+        isRunning = false;
+        return;
+    }
+    
+    json data;
+    file >> data;
+
+    settings.vol = data.value("vol", 100);
+    settings.sevol = data.value("sevol", 100);
+    settings.mode = data.value("mode", false);
+
+    //设置音效channel数量
+    Mix_AllocateChannels(32);
+
+    // 设置音量
+    Mix_VolumeMusic(settings.vol);
+    Mix_Volume(-1, settings.sevol);
+
+    //全屏
+    if(settings.mode)
+    {
+        SDL_RenderSetLogicalSize(renderer, WINDOW_W, WINDOW_H);
+        SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    }
+    else
+    {
+        SDL_SetWindowFullscreen(window, 0);
+        SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+    }
+}
 
 Game::Game()
 {
@@ -63,13 +169,6 @@ void Game::init()
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_mixer could not open audio! SDL_mixer Error: %s\n", Mix_GetError());
         isRunning = false;
     }
-    
-    //设置音效channel数量
-    Mix_AllocateChannels(32);
-
-    //设置音量
-    Mix_VolumeMusic(MIX_MAX_VOLUME / 4);//音乐
-    Mix_Volume(-1, MIX_MAX_VOLUME / 8);//音效
 
     //载入字体
     titleFont = TTF_OpenFont("assets/font/VonwaonBitmap-16px.ttf", 64);
@@ -79,6 +178,9 @@ void Game::init()
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "TTF_OpenFont: %s\n", TTF_GetError());
         isRunning = false;
     }
+
+    //载入setting.json
+    loadSetting();
 
     currentScene = new SceneTitle;
     currentScene->init();
@@ -113,6 +215,8 @@ void Game::run()
 
 void Game::clean()
 {
+    saveSetting();
+
     if(currentScene != nullptr)
     {
         currentScene->clean();
