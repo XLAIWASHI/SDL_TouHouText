@@ -8,8 +8,17 @@ build/
 cmake-build-*/
 
 # C++ 编译文件
-*.o *.obj *.exe *.dll *.lib *.so *.dylib *.a
-*.pdb *.pch *.d
+*.o
+*.obj
+*.exe
+*.dll
+*.lib
+*.so
+*.dylib
+*.a
+*.pdb
+*.pch
+*.d
 
 # VSCode
 .vscode/
