@@ -2,9 +2,16 @@
 #include "SceneMain.h"
 #include "SceneOption.h"
 #include "Game.h"
+#include "Utils.h"
+#include <nlohmann/json.hpp>
+#include <string>
+
+using json = nlohmann::json;
 
 void SceneTitle::init()
 {
+    //加载optionitem.json
+    loadTitleItemFile();
     // bgm = Mix_LoadMUS("assets/music/bgm/Evan Call - The Magic Within.mp3");
     game.playBGM("assets\\music\\bgm\\th08_01.mid");
 
@@ -57,7 +64,7 @@ void SceneTitle::handleEvent(SDL_Event *event)
         // 按下触发事件
         if(event->key.keysym.scancode == SDL_SCANCODE_RETURN)
         {
-            if(state == TitleButtonType::star)
+            if(state == TitleButtonType::start)
             {
                 SceneMain* sceneMain = new SceneMain();
                 game.changeScene(sceneMain);
@@ -87,7 +94,7 @@ void SceneTitle::render()
     //渲染标题
     renderTitle1();
     //渲染按钮
-    renderTitleMenu();
+    renderTitleButton();
 
 }
 
@@ -125,62 +132,63 @@ void SceneTitle::renderTitle1()
     SDL_RenderCopy(game.getRenderer(), title.texture, nullptr, &rect);
 }
 
-void SceneTitle::renderTitleMenu()
+void SceneTitle::renderTitleButton()
 {
-    //star
-    SDL_Rect srcStar = {0, 0, TITLE_MENU_STAR_W, TITLE_MENU_STAR_H};
-    SDL_Rect dstStar = {
-        0,
-        margin,
-        static_cast<int>(TITLE_MENU_STAR_W * mult),
-        static_cast<int>(TITLE_MENU_STAR_H * mult)
-    };
+    if(titles.empty())
+    {
+        return;
+    }
+    for(int i = 0; i < titles.size(); i++)
+    {
+        if((TitleButtonType)state == titles[i].type)
+        {
+            SDL_SetTextureColorMod(title_menu.texture, 255, 255, 255);
+        }
+        else
+        {
+            SDL_SetTextureColorMod(title_menu.texture, 100, 100, 100);
+        }
+        SDL_RenderCopy(game.getRenderer(), title_menu.texture, &titles[i].src, &titles[i].dst);
+    }
+}
 
-    if(state == TitleButtonType::star)
+void SceneTitle::loadTitleItemFile()
+{
+    std::ifstream file("data\\optionItem.json");
+    if(!file.is_open())
     {
-        SDL_SetTextureColorMod(title_menu.texture, 255, 255, 255);
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Open TitleItem Error: %s\n", SDL_GetError());
+        game.getIsRunning() = false;
+        return;
     }
-    else
-    {
-        SDL_SetTextureColorMod(title_menu.texture, 100, 100, 100);
-    }
-    SDL_RenderCopy(game.getRenderer(), title_menu.texture, &srcStar, &dstStar);
 
-    //option
-    SDL_Rect srcOption = {TITLE_MENU_OPTION_X, TITLE_MENU_OPTION_Y, TITLE_MENU_OPTION_W, TITLE_MENU_OPTION_H};
-    SDL_Rect dstOption = {
-        0,
-        static_cast<int>(margin + TITLE_MENU_STAR_H * mult),
-        static_cast<int>(TITLE_MENU_OPTION_W * mult),
-        static_cast<int>(TITLE_MENU_OPTION_H * mult)
-    };
+    json data;
+    file >> data;
 
-    if(state == TitleButtonType::option)
-    {
-        SDL_SetTextureColorMod(title_menu.texture, 255, 255, 255);
-    }
-    else
-    {
-        SDL_SetTextureColorMod(title_menu.texture, 100, 100, 100);
-    }
-    SDL_RenderCopy(game.getRenderer(), title_menu.texture, &srcOption, &dstOption);
+    margin = data["titleMargin"].get<int>();
 
-    //quit
-    SDL_Rect srcQuit = {TITLE_MENU_QUIT_X, TITLE_MENU_QUIT_Y, TITLE_MENU_QUIT_W, TITLE_MENU_QUIT_H};
-    SDL_Rect dstQuit = {
-        0,
-        static_cast<int>(margin + TITLE_MENU_STAR_H * mult + TITLE_MENU_OPTION_H * mult),
-        static_cast<int>(TITLE_MENU_QUIT_W * mult),
-        static_cast<int>(TITLE_MENU_QUIT_H * mult)
-    };
-
-    if(state == TitleButtonType::quit)
+    //清理旧数据
+    titles.clear();
+    int index = 0;
+    for(auto& item : data["title"])
     {
-        SDL_SetTextureColorMod(title_menu.texture, 255, 255, 255);
+        TitleItem tit;
+        std::string typeStr = item["type"].get<std::string>();
+        tit.type = strToTitle(typeStr);
+        tit.src = {
+            item["src"]["x"].get<int>(),
+            item["src"]["y"].get<int>(),
+            item["src"]["w"].get<int>(),
+            item["src"]["h"].get<int>()
+        };
+        tit.dst = {
+            0,
+            static_cast<int>(margin + index * tit.src.h * mult),
+            static_cast<int>(tit.src.w * mult),
+            static_cast<int>(tit.src.h * mult)
+        };
+        titles.push_back(tit);
+        ++index;
     }
-    else
-    {
-        SDL_SetTextureColorMod(title_menu.texture, 100, 100, 100);
-    }
-    SDL_RenderCopy(game.getRenderer(), title_menu.texture, &srcQuit, &dstQuit);
+    state = TitleButtonType::start;
 }

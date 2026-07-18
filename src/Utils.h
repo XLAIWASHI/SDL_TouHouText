@@ -5,5 +5,6 @@
 #include <string>
 
 OptionButtonType strToOption(std::string str);
+TitleButtonType strToTitle(std::string str);
 
 #endif

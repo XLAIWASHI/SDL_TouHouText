@@ -31,5 +31,6 @@
         "percentY": 256,
         "percentW": 32,
         "percentH": 32
-    }
+    },
+    "titleMargin": 521
 }

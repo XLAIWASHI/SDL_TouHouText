@@ -43,7 +43,7 @@ enum class ItemType
 
 enum class TitleButtonType
 {
-    star,
+    start,
     option,
     quit,
     COUNT
@@ -72,6 +72,13 @@ struct OptionItem
     SDL_Rect dst;
     std::vector<OptionItem> variants;
     int currentVariant; //子选项索引
+};
+
+struct TitleItem
+{
+    TitleButtonType type;
+    SDL_Rect src;
+    SDL_Rect dst;
 };
 
 struct Player
