@@ -1,4 +1,5 @@
 #include "SceneMain.h"
+#include "SceneTitle.h"
 #include "Game.h"
 #include <nlohmann/json.hpp>
 
@@ -38,6 +39,7 @@ void SceneMain::init()
         return;
     }
     SDL_QueryTexture(playarea.texture, nullptr, nullptr, &playarea.width, &playarea.height);
+    playarea.width = game.getPlayAreaWidth();
     //玩家资源导入
     player.texture = IMG_LoadTexture(game.getRenderer(), "assets\\image\\player\\pl00.png");
     if(player.texture == nullptr)
@@ -104,6 +106,14 @@ void SceneMain::init()
 
 void SceneMain::handleEvent(SDL_Event *event)
 {
+    if(event->type == SDL_KEYDOWN)
+    {
+        if(event->key.keysym.scancode == SDL_SCANCODE_ESCAPE)
+        {
+            SceneTitle* sceneTitle = new SceneTitle();
+            game.changeScene(sceneTitle);
+        }
+    }
 }
 
 void SceneMain::update(float deltaTime)
@@ -234,7 +244,6 @@ void SceneMain::keyboardControl(float deltaTime)
     if(keyboardState[SDL_SCANCODE_LSHIFT] || keyboardState[SDL_SCANCODE_RSHIFT])
     {
         currentSpeed = player.BaseSpeed / 2;
-        SDL_SetTextureColorMod(player.texture, 100, 100, 100);
         SDL_SetTextureAlphaMod(playerPoint.texture, 255);//不透明
     }
 
@@ -806,11 +815,8 @@ void SceneMain::renderPlayArea()
     
     for(int posY = playarea.offset + margin; posY < game.getPlayAreaHeight(); posY += playarea.height)
     {
-        for(int posX = margin; posX < game.getPlayAreaWidth(); posX += playarea.width)
-        {
-            SDL_Rect rect = {posX, posY, playarea.width, playarea.height};
-            SDL_RenderCopy(game.getRenderer(), playarea.texture, nullptr, &rect);
-        }
+        SDL_Rect rect = {margin, posY, playarea.width, playarea.height};
+        SDL_RenderCopy(game.getRenderer(), playarea.texture, nullptr, &rect);
     }
     
     SDL_RenderSetClipRect(game.getRenderer(), nullptr);

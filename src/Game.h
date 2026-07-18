@@ -2,8 +2,12 @@
 #define GAME_H
 
 #include "Scene.h"
+#include "Object.h"
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_mixer.h>
+#include <SDL_ttf.h>
+#include <string>
 
 class Game
 {
@@ -22,6 +26,7 @@ public:
     void handleEvent(SDL_Event* event);
     void update(float deltaTime);
     void render();
+    SDL_Point renderTextCentered(std::string text, float posY, bool isTitle, SDL_Color color);
 
     //getting
     SDL_Renderer* getRenderer() { return renderer; }
@@ -31,11 +36,21 @@ public:
     int getPlayAreaWidth() { return PLAY_AREA_W; }
     int getPlayAreaHeight() { return PLAY_AREA_H; }
     bool& getIsRunning() { return isRunning; }
+    Settings* getSettings() { return &settings; }
+
+    void saveSetting();
+    void applySetting();
+    //音乐相关
+    void playBGM(const std::string& path);
 
 private:
+    void loadSetting();
     Game();
     Game(const Game&) = delete;
     Game& operator=(const Game&) = delete;
+    Mix_Music* bgm = nullptr;
+    std::string currentBgmPath = "";
+    Settings settings;// 设置
 
     bool isRunning = true;//游戏是否运行
 
@@ -54,6 +69,9 @@ private:
     const int PLAY_AREA_W = 600;
     const int PLAY_AREA_H = 800;
     
+    //字体相关
+    TTF_Font* titleFont = nullptr;
+    TTF_Font* textFont = nullptr;
 
 };
 

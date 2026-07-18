@@ -2,6 +2,7 @@
 #define OBJECT_H
 
 #include <SDL.h>
+#include <vector>
 
 enum class PlayerAnimationType
 {
@@ -38,6 +39,46 @@ enum class EnemyAnimationType
 enum class ItemType
 {
     
+};
+
+enum class TitleButtonType
+{
+    start,
+    option,
+    quit,
+    COUNT
+};
+
+enum class OptionButtonType
+{
+    vol,
+    sevol,
+    mode,
+    quit,
+    COUNT
+};
+
+struct Settings
+{
+    int vol = 100;
+    int sevol = 100;
+    bool mode = false;
+};
+
+struct OptionItem
+{
+    OptionButtonType type;
+    SDL_Rect src;
+    SDL_Rect dst;
+    std::vector<OptionItem> variants;
+    int currentVariant; //子选项索引
+};
+
+struct TitleItem
+{
+    TitleButtonType type;
+    SDL_Rect src;
+    SDL_Rect dst;
 };
 
 struct Player
@@ -115,6 +156,14 @@ struct EnemyBullet
 };
 
 struct Background
+{
+    SDL_Texture* texture = nullptr;
+    SDL_FPoint position = {0.0f, 0.0f};
+    int width = 0;
+    int height = 0;
+};
+
+struct Title
 {
     SDL_Texture* texture = nullptr;
     SDL_FPoint position = {0.0f, 0.0f};
