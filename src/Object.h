@@ -3,6 +3,7 @@
 
 #include <SDL.h>
 #include <vector>
+#include <unordered_map>
 
 enum class PlayerAnimationType
 {
@@ -98,6 +99,8 @@ struct Player
     Uint32 FPS = 15;
     PlayerAnimationType currentAnimationType = PlayerAnimationType::idle;
     PlayerBulletType currentBulletType = PlayerBulletType::bullet1;
+    bool firstMoveLoop = true; //是否第一次循环
+    int loopStartFrame = 0; //下一轮开始帧
 };
 
 struct PlayerPoint

@@ -235,6 +235,14 @@ void Game::clean()
         TTF_CloseFont(textFont);
     }
 
+    //清理bgm
+    if(bgm)
+    {
+        Mix_HaltMusic();
+        Mix_FreeMusic(bgm);
+        bgm = nullptr;
+    }
+
     //清理SDL_mixer
     Mix_CloseAudio();
     Mix_Quit();

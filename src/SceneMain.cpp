@@ -15,6 +15,7 @@ SceneMain::~SceneMain()
 
 void SceneMain::init()
 {
+    game.playBGM("assets\\music\\bgm\\th08_09.mid");
     //导入波次表
     loadWavesFromFile("data\\waves.json");
     //随机数
@@ -247,34 +248,63 @@ void SceneMain::keyboardControl(float deltaTime)
         SDL_SetTextureAlphaMod(playerPoint.texture, 255);//不透明
     }
 
+    PlayerAnimationType oldType = player.currentAnimationType;
+    PlayerAnimationType newType = oldType;
+
     if(keyboardState[SDL_SCANCODE_W])
     {
         isMoving = true;
-        player.currentAnimationType = PlayerAnimationType::idle;
         player.position.y -= deltaTime * currentSpeed;
+        newType = PlayerAnimationType::idle;
     }
     if(keyboardState[SDL_SCANCODE_S])
     {
         isMoving = true;
-        player.currentAnimationType = PlayerAnimationType::idle;
         player.position.y += deltaTime * currentSpeed;
+        newType = PlayerAnimationType::idle;
     }
     if(keyboardState[SDL_SCANCODE_A])
     {
         isMoving = true;
-        player.currentAnimationType = PlayerAnimationType::left;
         player.position.x -= deltaTime * currentSpeed;
+        newType = PlayerAnimationType::left;
     }
     if(keyboardState[SDL_SCANCODE_D])
     {
         isMoving = true;
-        player.currentAnimationType = PlayerAnimationType::right;
         player.position.x += deltaTime * currentSpeed;
+        newType = PlayerAnimationType::right;
+    }
+    
+    //如果动画类型发生了改变，重置计时器和帧
+    if(newType != oldType)
+    {
+        player.currentAnimationType = newType;
+        player.starTime = currentTime;
+        player.currentFrame = 0;
+
+        //左右动画重新开始
+        if (newType == PlayerAnimationType::left ||
+            newType == PlayerAnimationType::right)
+        {
+            player.firstMoveLoop = true;
+            player.loopStartFrame = 0;
+        }
     }
 
-    if(isMoving)
+    if (!isMoving)
     {
-        player.starTime = currentTime;
+        //松开恢复
+        if(player.currentAnimationType != PlayerAnimationType::idle)
+        {
+            player.currentAnimationType = PlayerAnimationType::idle;
+            player.starTime = currentTime;
+            player.currentFrame = 0;
+
+            //下次再按左右重新播放动画
+            player.firstMoveLoop = true;
+            player.loopStartFrame = 0;
+        }
     }
 
     //限制边界
@@ -330,12 +360,26 @@ void SceneMain::updatePlayArea(float deltaTime)
 void SceneMain::updatePlayerAnimation(float deltaTime)
 {
     Uint32 currentTime = SDL_GetTicks();
-    player.currentFrame = ((currentTime - player.starTime) * player.FPS / 1000);
+    player.currentFrame = player.loopStartFrame + ((currentTime - player.starTime) * player.FPS / 1000);
     if(player.currentFrame >= player.totalFrame)
     {
-        player.currentAnimationType = PlayerAnimationType::idle;
         player.starTime = currentTime;
-        player.currentFrame = 0;
+        
+        if (player.currentAnimationType == PlayerAnimationType::left ||
+            player.currentAnimationType == PlayerAnimationType::right)
+        {
+            if(player.firstMoveLoop)
+            {
+                //第一轮结束，之后从第3帧开始
+                player.firstMoveLoop = false;
+                player.loopStartFrame = 3;
+            }
+            player.currentFrame = player.loopStartFrame;
+        }
+        else
+        {
+            player.currentFrame = 0;
+        }
     }
 }
 
@@ -766,9 +810,6 @@ void SceneMain::updateWave(float deltaTime) {
         curWave++;
         waveTimer = 0.0f;
         nextSpawnIdx = 0;
-        // 可选：清空所有敌人（如果希望波次之间干净）
-        // for (auto e : Enemies) delete e;
-        // Enemies.clear();
     }
 }
 
@@ -793,7 +834,7 @@ void SceneMain::spawnEnemyAtType(EnemyType type, float x, float y, int dirX, int
     }
     enemy->currentEnemyType = type;
 
-    // 根据类型设置属性（速度、血量、CD等）—— 这部分从你原来的 spawEnemy 里复制
+    // 根据类型设置属性（速度、血量、CD等）
     switch (type) {
         case EnemyType::enemyBase1:
             enemy->speed = 140.0f; enemy->health = 1; enemy->cooldown = 1800; break;
