@@ -3,6 +3,7 @@
 
 #include "Scene.h"
 #include "Object.h"
+#include "Boss.h"
 #include <unordered_map>
 #include <list>
 #include <string>
@@ -57,7 +58,7 @@ private:
     
     //生成敌人
     void spawnEnemyAtType(EnemyType type, float x, float y, int dirX, int dirY);
-    
+    void spawnBoss(BossType type, float x, float y);
     //设置敌人当前状态的总帧数
     void setEnemyTotalFrame(Enemy* enemy);
     SDL_Rect getEnemyFrameRect(Enemy* enemy);
@@ -81,9 +82,11 @@ private:
 
     //容器相关
     std::unordered_map<std::string, SDL_Texture*> BulletTextureManager;//子弹纹理库
+    std::unordered_map<std::string, SDL_Texture*> BossTextureManager;//boss纹理库
     std::list<PlayerBullet*> PlayerBullets;//玩家子弹库
     std::list<Enemy*> Enemies;//敌人库
     std::list<EnemyBullet*> EnemiesBullets;//敌人子弹库
+
     
 
     bool isPressed = false;//判断是否按下切换按钮
@@ -95,10 +98,15 @@ private:
     //UI相关
     SDL_Texture* uiHealth = nullptr;
 
+    //Boss相关
+    Boss* boss = nullptr;
+
     //波次表
     struct SpawnCmd
     {
-        EnemyType type;
+        SpawnType spawnType;
+        EnemyType enemyType;
+        BossType bossType;
         float delay;
         float posX;
         float posY;
@@ -114,7 +122,7 @@ private:
     };
 
     std::vector<Wave> waves;//所有波次
-    float curWave = 0;//当前波次
+    int curWave = 0;//当前波次
     float waveTimer = 0.0f;
     int nextSpawnIdx = 0;
 };

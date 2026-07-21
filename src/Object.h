@@ -20,6 +20,14 @@ enum class PlayerBulletType
     COUNT
 };
 
+enum class BossAnimationType
+{
+    idle,
+    left,
+    right,
+    attack
+};
+
 enum class EnemyType
 {
     enemyBase1,
@@ -35,6 +43,27 @@ enum class EnemyAnimationType
     left,
     down,
     COUNT
+};
+
+enum class SpawnType
+{
+    Enemy,
+    Boss
+};
+
+enum class BossType
+{
+    boss1,
+    COUNT
+};
+
+enum class BossMoveType
+{
+    enter, //出场进入
+    idle, //固定位置
+    moveto,
+    horizontal, //左右移动
+    circle //环形移动
 };
 
 enum class ItemType

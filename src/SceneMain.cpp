@@ -87,6 +87,17 @@ void SceneMain::init()
             return;
         }
     }
+    //Boss资源加载
+    BossTextureManager["boss1"] = IMG_LoadTexture(game.getRenderer(), "assets\\image\\boss\\stg3enm.png");
+    for(auto& boss : BossTextureManager)
+    {
+        if(boss.second == nullptr)
+        {
+            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "boss init Error: %s\n", SDL_GetError());
+            game.getIsRunning() = false;
+            return;
+        }
+    }
     //敌人资源加载
     enemyTemplate.texture = IMG_LoadTexture(game.getRenderer(), "assets\\image\\enemy\\enemy5.png");
     if(enemyTemplate.texture == nullptr)
@@ -131,6 +142,10 @@ void SceneMain::update(float deltaTime)
     updatePlayerBullet(deltaTime);
     //更新敌人子弹
     updateEnemiesBullet(deltaTime);
+    if(boss != nullptr)
+    {
+        boss->update(deltaTime);
+    }
     //生成敌人
     updateWave(deltaTime);
     
@@ -144,6 +159,10 @@ void SceneMain::render()
     renderPlayArea();
     //渲染敌人
     renderEnemies();
+    if(boss != nullptr)
+    {
+        boss->render(game.getRenderer());
+    }
     //渲染玩家
     renderPlayer();
     //渲染敌人子弹
@@ -195,6 +214,15 @@ void SceneMain::clean()
         }
     }
     BulletTextureManager.clear();
+    //boss纹理库
+    for(auto& bs : BossTextureManager)
+    {
+        if(bs.second != nullptr)
+        {
+            SDL_DestroyTexture(bs.second);
+        }
+    }
+    BossTextureManager.clear();
     //玩家子弹库
     for(auto& bullet : PlayerBullets)
     {
@@ -747,22 +775,37 @@ void SceneMain::loadWavesFromFile(const std::string &filename)
         {
             SpawnCmd cmd;
             std::string typeStr = sj["type"];
-            if(typeStr == "enemyBase1")
+            if(typeStr == "enemy")
             {
-                cmd.type = EnemyType::enemyBase1;
+                cmd.spawnType = SpawnType::Enemy;
+                std::string enemyStr = sj["enemyType"];
+                if(enemyStr == "enemyBase1")
+                {
+                    cmd.enemyType = EnemyType::enemyBase1;
+                }
+                else if(enemyStr == "enemyBase2")
+                {
+                    cmd.enemyType = EnemyType::enemyBase2;
+                }
+                else if(enemyStr == "enemyBase3")
+                {
+                    cmd.enemyType = EnemyType::enemyBase3;
+                }
+                else if(enemyStr == "enemyBase4")
+                {
+                    cmd.enemyType = EnemyType::enemyBase4;
+                }
             }
-            else if(typeStr == "enemyBase2")
+            else if(typeStr == "boss")
             {
-                cmd.type = EnemyType::enemyBase2;
+                cmd.spawnType = SpawnType::Boss;
+                std::string bossStr = sj["bossType"];
+                if(bossStr == "boss1")
+                {
+                    cmd.bossType = BossType::boss1;
+                }
             }
-            else if(typeStr == "enemyBase3")
-            {
-                cmd.type = EnemyType::enemyBase3;
-            }
-            else if(typeStr == "enemyBase4")
-            {
-                cmd.type = EnemyType::enemyBase4;
-            }
+            
             cmd.delay = sj["delay"];
             cmd.posX = sj.value("posX", 0.5f);
             cmd.posY = sj.value("posY", 0.0f);
@@ -786,34 +829,49 @@ void SceneMain::updateWave(float deltaTime) {
     waveTimer += deltaTime;
 
     // 生成敌人
-    while (nextSpawnIdx < wave.spawns.size() && waveTimer >= wave.spawns[nextSpawnIdx].delay) {
+    while(nextSpawnIdx < wave.spawns.size() && waveTimer >= wave.spawns[nextSpawnIdx].delay)
+    {
         SpawnCmd& cmd = wave.spawns[nextSpawnIdx];
         float realX = margin + cmd.posX * game.getPlayAreaWidth();
         float realY = margin + cmd.posY * game.getPlayAreaHeight();
-        spawnEnemyAtType(cmd.type, realX, realY, cmd.dirX, cmd.dirY);
+        if(cmd.spawnType == SpawnType::Enemy)
+        {
+            spawnEnemyAtType(cmd.enemyType, realX, realY, cmd.dirX, cmd.dirY);
+        }
+        else if(cmd.spawnType == SpawnType::Boss)
+        {
+            spawnBoss(cmd.bossType, realX, realY);
+        }
         nextSpawnIdx++;
     }
 
     // 判断本波是否结束
     bool finished = false;
-    if (wave.waitClear) {
-        if (nextSpawnIdx >= wave.spawns.size() && Enemies.empty()) {
+    if(wave.waitClear)
+    {
+        if(nextSpawnIdx >= wave.spawns.size() && Enemies.empty() && boss == nullptr)
+        {
             finished = true;
         }
-    } else {
-        if (wave.duration > 0 && waveTimer >= wave.duration) {
+    }
+    else
+    {
+        if(wave.duration > 0 && waveTimer >= wave.duration)
+        {
             finished = true;
         }
     }
 
-    if (finished) {
+    if(finished)
+    {
         curWave++;
         waveTimer = 0.0f;
         nextSpawnIdx = 0;
     }
 }
 
-void SceneMain::spawnEnemyAtType(EnemyType type, float x, float y, int dirX, int dirY) {
+void SceneMain::spawnEnemyAtType(EnemyType type, float x, float y, int dirX, int dirY)
+{
     Enemy* enemy = new Enemy(enemyTemplate);
     enemy->currentAnimationType = EnemyAnimationType::down;   // 默认向下动画
     enemy->width *= 1.3, enemy->height *= 1.3;
@@ -835,7 +893,8 @@ void SceneMain::spawnEnemyAtType(EnemyType type, float x, float y, int dirX, int
     enemy->currentEnemyType = type;
 
     // 根据类型设置属性（速度、血量、CD等）
-    switch (type) {
+    switch(type)
+    {
         case EnemyType::enemyBase1:
             enemy->speed = 140.0f; enemy->health = 1; enemy->cooldown = 1800; break;
         case EnemyType::enemyBase2:
@@ -848,6 +907,19 @@ void SceneMain::spawnEnemyAtType(EnemyType type, float x, float y, int dirX, int
     }
     setEnemyTotalFrame(enemy);
     Enemies.push_back(enemy);
+}
+void SceneMain::spawnBoss(BossType type, float x, float y)
+{
+    if(boss != nullptr)
+    {
+        return;
+    }
+    boss = new Boss();
+    if(!boss->init(BossTextureManager["boss1"], x, y))
+    {
+        delete boss;
+        boss = nullptr;
+    }
 }
 void SceneMain::renderPlayArea()
 {
