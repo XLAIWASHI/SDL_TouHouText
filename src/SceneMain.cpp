@@ -1,7 +1,12 @@
 #include "SceneMain.h"
 #include "SceneTitle.h"
 #include "Game.h"
+#include "EnemyBullet.h"
+#include "BulletPattern.h"
+#include "BulletManager.h"
+#include "Boss1Fight.h"
 #include <nlohmann/json.hpp>
+
 
 using json = nlohmann::json;
 
@@ -78,6 +83,9 @@ void SceneMain::init()
     BulletTextureManager["EnemyBullet2"] = IMG_LoadTexture(game.getRenderer(), "assets\\image\\bullet\\粒弹\\粒弹0.png");
     BulletTextureManager["EnemyBullet3"] = IMG_LoadTexture(game.getRenderer(), "assets\\image\\bullet\\粒弹\\粒弹30.png");
     BulletTextureManager["EnemyBullet4"] = IMG_LoadTexture(game.getRenderer(), "assets\\image\\bullet\\粒弹\\粒弹300.png");
+    
+    bulletManager = new BulletManager();
+
     for(auto& bullet : BulletTextureManager)
     {
         if(bullet.second == nullptr)
@@ -142,9 +150,14 @@ void SceneMain::update(float deltaTime)
     updatePlayerBullet(deltaTime);
     //更新敌人子弹
     updateEnemiesBullet(deltaTime);
+    bulletManager->update(deltaTime);
     if(boss != nullptr)
     {
         boss->update(deltaTime);
+    }
+    if(bossFight != nullptr && boss != nullptr)
+    {
+        bossFight->update(deltaTime, boss->getBossPosition(), *bulletManager);
     }
     //生成敌人
     updateWave(deltaTime);
@@ -167,6 +180,7 @@ void SceneMain::render()
     renderPlayer();
     //渲染敌人子弹
     renderEnemiesBullet();
+    bulletManager->render(game.getRenderer());
     //渲染玩家子弹
     renderPlayerBullet();
     //渲染UI
@@ -558,7 +572,7 @@ void SceneMain::updateEnemiesBullet(float deltaTime)
         EnemyBullet* bullet = *it;
         bullet->timer += deltaTime;
 
-        if(bullet->type == EnemyType::enemyBase4)
+        if(bullet->enemyType == EnemyType::enemyBase4)
         {
             bullet->lifeTimer += deltaTime;
             //得到目标方向
@@ -663,22 +677,22 @@ void SceneMain::shootEnemy(Enemy* enemy, SDL_FPoint offset)
     if(enemy->currentEnemyType == EnemyType::enemyBase1)
     {
         bullet->texture = BulletTextureManager["EnemyBullet1"];
-        bullet->type = EnemyType::enemyBase1;
+        bullet->enemyType = EnemyType::enemyBase1;
     }
     else if(enemy->currentEnemyType == EnemyType::enemyBase2)
     {
         bullet->texture = BulletTextureManager["EnemyBullet2"];
-        bullet->type = EnemyType::enemyBase2;
+        bullet->enemyType = EnemyType::enemyBase2;
     }
     else if(enemy->currentEnemyType == EnemyType::enemyBase3)
     {
         bullet->texture = BulletTextureManager["EnemyBullet3"];
-        bullet->type = EnemyType::enemyBase3;
+        bullet->enemyType = EnemyType::enemyBase3;
     }
     else if(enemy->currentEnemyType == EnemyType::enemyBase4)
     {
         bullet->texture = BulletTextureManager["EnemyBullet4"];
-        bullet->type = EnemyType::enemyBase4;
+        bullet->enemyType = EnemyType::enemyBase4;
     }
     SDL_QueryTexture(bullet->texture, nullptr, nullptr, &bullet->width, &bullet->height);
     bullet->width *= 2, bullet->height *= 2;
@@ -841,6 +855,7 @@ void SceneMain::updateWave(float deltaTime) {
         else if(cmd.spawnType == SpawnType::Boss)
         {
             spawnBoss(cmd.bossType, realX, realY);
+            bossFight = new Boss1Fight(BulletTextureManager);
         }
         nextSpawnIdx++;
     }

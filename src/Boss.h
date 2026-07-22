@@ -19,16 +19,20 @@ public:
     void render(SDL_Renderer* renderer);
     void takeDamage(int damage); //收到伤害
     void startEnter(float x, float y);
+    SDL_FPoint getBossPosition() { return {position.x + static_cast<int>(width * 1.5 / 2),
+        position.y + static_cast<int>(height * 1.5 / 2)}; }
 private:
     void changeAnimation(BossAnimationType type);
     SDL_Rect getBossFrameRect();
     void setTargetPosition(float x, float y);
     void startHorizontal(float left, float right);
+    void startCircle(float radius);
 
     void updateBossAnimation(float deltaTime);
     void updateMove(float deltaTime);
     void updateMoveTo(float deltaTime);
     void updateHorizontal(float deltaTime);
+    void updateCircle(float deltaTime);
 
     void renderBossAnimation(SDL_Renderer* renderer);
 
@@ -57,6 +61,13 @@ private:
     float leftLimit = 0.0f;
     float rightLimit = 0.0f;
     float horizontalDir = 0.0f;
+
+    SDL_FPoint center = {0.0f, 0.0f}; //圆心
+    SDL_FPoint lastPosition = {0.0f, 0.0f};
+    float radius = 80.0f; //半径
+    float angle = 0.0f; //当前角度
+    float angularSpeed = 90.0f; //每秒90度
+    
 };
 
 

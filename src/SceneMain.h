@@ -11,6 +11,11 @@
 #include <vector>
 #include <fstream>
 
+class EnemyBullet;
+class BulletPattern;
+class BulletManager;
+class Boss1Fight;
+
 class SceneMain : public Scene
 {
 public:
@@ -86,7 +91,10 @@ private:
     std::list<PlayerBullet*> PlayerBullets;//玩家子弹库
     std::list<Enemy*> Enemies;//敌人库
     std::list<EnemyBullet*> EnemiesBullets;//敌人子弹库
-
+    
+    BulletManager* bulletManager = nullptr;
+    
+    Boss1Fight* bossFight = nullptr;
     
 
     bool isPressed = false;//判断是否按下切换按钮

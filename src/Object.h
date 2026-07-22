@@ -5,6 +5,12 @@
 #include <vector>
 #include <unordered_map>
 
+enum class BulletType
+{
+    granBlue, //蓝色粒弹
+    granRed
+};
+
 enum class PlayerAnimationType
 {
     idle,
@@ -61,7 +67,7 @@ enum class BossMoveType
 {
     enter, //出场进入
     idle, //固定位置
-    moveto,
+    moveto, //移动到一个点
     horizontal, //左右移动
     circle //环形移动
 };
@@ -169,22 +175,6 @@ struct Enemy
     Uint32 FPS = 15;
     EnemyType currentEnemyType = EnemyType::enemyBase1;
     EnemyAnimationType currentAnimationType = EnemyAnimationType::down;
-};
-
-struct EnemyBullet
-{
-    SDL_Texture* texture = nullptr;
-    SDL_FPoint position = {0.0f, 0.0f};
-    SDL_FPoint direction = {0.0f, 0.0f};
-    int width = 0;
-    int height = 0;
-    int speed = 200;
-    int damage = 1;
-    float delay = 1.0f;
-    float timer = 0.0f;
-    float lifeTimer = 0.0f;//已经存活的时间
-    const float lifeTime = 6.0f;
-    EnemyType type = EnemyType::enemyBase1;//谁的子弹
 };
 
 struct Background

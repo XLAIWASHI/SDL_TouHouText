@@ -22,8 +22,9 @@ bool Boss::init(SDL_Texture* texture, float x, float y)
     SDL_QueryTexture(this->texture, nullptr, nullptr, &texW, &texH);
     this->totalFrame = texW / width;
     starTime = SDL_GetTicks();
-    //startEnter(300.0f, 300.0f);
-    startHorizontal(0.0f, 400.0f);
+    startEnter(300.0f, 300.0f);
+    // startHorizontal(0.0f, 400.0f);
+    // startCircle(80);
     return true;
 }
 
@@ -101,6 +102,15 @@ void Boss::startHorizontal(float left, float right)
     horizontalDir = 1.0f;
 }
 
+void Boss::startCircle(float radius)
+{
+    moveType = BossMoveType::circle;
+    center = position;
+    this->radius = radius;
+    angle = 0;
+    lastPosition = position;
+}
+
 void Boss::updateBossAnimation(float deltaTime)
 {
     Uint32 currentTime = SDL_GetTicks();
@@ -133,9 +143,13 @@ void Boss::updateMove(float deltaTime)
             updateMoveTo(deltaTime);
             break;
         case BossMoveType::idle:
+            
             break;
         case BossMoveType::horizontal:
             updateHorizontal(deltaTime);
+            break;
+        case BossMoveType::circle:
+            updateCircle(deltaTime);
             break;
     }
 }
@@ -192,6 +206,29 @@ void Boss::updateHorizontal(float deltaTime)
         position.x = leftLimit;
         horizontalDir = 1;
     }
+}
+
+void Boss::updateCircle(float deltaTime)
+{
+    angle += angularSpeed * deltaTime;
+    float rad = angle * M_PI / 180.0f;
+    position.x = center.x + cos(rad) * radius;
+    position.y = center.y + sin(rad) * radius;
+    float dx = position.x - lastPosition.x;
+    if(dx > 1.0f)
+    {
+        changeAnimation(BossAnimationType::right);
+    }
+    else if(dx < -1.0f)
+    {
+        changeAnimation(BossAnimationType::left);
+    }
+    if(angle >= 360.0f)
+    {
+        angle -= 360.0f;
+    }
+
+    lastPosition = position;
 }
 
 void Boss::renderBossAnimation(SDL_Renderer *renderer)
