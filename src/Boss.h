@@ -21,6 +21,7 @@ public:
     void startEnter(float x, float y);
     SDL_FPoint getBossPosition() { return {position.x + static_cast<int>(width * 1.5 / 2),
         position.y + static_cast<int>(height * 1.5 / 2)}; }
+    BossType getBossType() { return type; }
 private:
     void changeAnimation(BossAnimationType type);
     SDL_Rect getBossFrameRect();
@@ -39,6 +40,7 @@ private:
     
     bool isDead = false;
     BossMoveType moveType = BossMoveType::enter;
+    BossType type = BossType::boss1;
 
     SDL_Texture* texture = nullptr;
     SDL_FPoint position = {0.0f, 0.0f};

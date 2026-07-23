@@ -4,7 +4,7 @@
 #include "EnemyBullet.h"
 #include "BulletPattern.h"
 #include "BulletManager.h"
-#include "Boss1Fight.h"
+#include "BossFightController.h"
 #include <nlohmann/json.hpp>
 
 
@@ -155,9 +155,9 @@ void SceneMain::update(float deltaTime)
     {
         boss->update(deltaTime);
     }
-    if(bossFight != nullptr && boss != nullptr)
+    if(bossFightController != nullptr && boss != nullptr)
     {
-        bossFight->update(deltaTime, boss->getBossPosition(), *bulletManager);
+        bossFightController->update(deltaTime, *bulletManager, {player.position.x + player.width / 2, player.position.y + player.height / 2});
     }
     //生成敌人
     updateWave(deltaTime);
@@ -855,7 +855,8 @@ void SceneMain::updateWave(float deltaTime) {
         else if(cmd.spawnType == SpawnType::Boss)
         {
             spawnBoss(cmd.bossType, realX, realY);
-            bossFight = new Boss1Fight(BulletTextureManager);
+            bossFightController = new BossFightController(BulletTextureManager);
+            bossFightController->createFight(boss->getBossType(), boss);
         }
         nextSpawnIdx++;
     }

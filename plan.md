@@ -50,3 +50,60 @@
     2026.6.2注： 想试着把敌人生成逻辑改成波次表配置 (已完成) 试着弄了比较简单的
 
     2026.6.12注： 玩家移动的动画有问题，记得修改
+
+
+## boss战结构
+确定生成boss后
+1. bossFight->boss战流程->创建一个流程
+2. 然后在main更新bossFight的；bossFight里调用当前boss战的update
+3. 
+
+
+SceneMain
+Bossfightcontroller,战斗流程控制
+具体的战斗流程
+技能类 //需要加
+BulletPattern,弹幕模式
+
+SceneMain
+│
+├── Boss
+│     ├── 位置
+│     ├── 血量
+│     ├── 动画
+│     └── 移动
+│
+├── BulletManager
+│     ├── update()
+│     ├── render()
+│     └── 管理所有Boss弹
+│
+└── BossFightController
+      │
+      └── BossFight(基类)
+            │
+            ├── Boss1Fight
+            │      │
+            │      ├── BossSkill1
+            │      ├── BossSkill2
+            │      └── BossSkill3
+            │
+            ├── Boss2Fight
+            │      │
+            │      ├── BossSkill1
+            │      ├── BossSkill2
+            │      └── BossSkill3
+            │
+            └── ...
+
+SceneMain
+    ↓
+BossFightController
+    ↓
+Boss1Fight
+    ↓
+BossSkill
+    ↓
+BulletPattern
+    ↓
+BulletManager

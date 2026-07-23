@@ -14,6 +14,7 @@
 class EnemyBullet;
 class BulletPattern;
 class BulletManager;
+class BossFightController;
 class Boss1Fight;
 
 class SceneMain : public Scene
@@ -91,11 +92,6 @@ private:
     std::list<PlayerBullet*> PlayerBullets;//玩家子弹库
     std::list<Enemy*> Enemies;//敌人库
     std::list<EnemyBullet*> EnemiesBullets;//敌人子弹库
-    
-    BulletManager* bulletManager = nullptr;
-    
-    Boss1Fight* bossFight = nullptr;
-    
 
     bool isPressed = false;//判断是否按下切换按钮
 
@@ -108,6 +104,9 @@ private:
 
     //Boss相关
     Boss* boss = nullptr;
+    BulletManager* bulletManager = nullptr;
+    
+    BossFightController* bossFightController = nullptr;
 
     //波次表
     struct SpawnCmd
