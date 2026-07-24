@@ -66,6 +66,15 @@ void BulletPattern::shootAimed(BulletManager &manager, SDL_FPoint startPos, SDL_
     createBullet(manager, startPos, {dx, dy}, type);
 }
 
+void BulletPattern::shootDirection(BulletManager &manager, SDL_FPoint position, float angle, BulletType type)
+{
+    float rad = angle * M_PI / 180.0f;
+    SDL_FPoint dir;
+    dir.x = cos(rad);
+    dir.y = sin(rad);
+    createBullet(manager, position, dir, type);   
+}
+
 void BulletPattern::createBullet(BulletManager &manager, SDL_FPoint position, SDL_FPoint direction, BulletType type)
 {
     EnemyBullet* bullet = new EnemyBullet();

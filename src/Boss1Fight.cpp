@@ -1,25 +1,28 @@
 #include "Boss1Fight.h"
 #include "BulletManager.h"
-#include "BulletPattern.h"
+#include "BulletSkill.h"
 
 Boss1Fight::Boss1Fight(std::unordered_map<std::string, SDL_Texture*>& textureManager)
 {
-    bulletPattern = new BulletPattern(textureManager);
+    bulletSkill = new BulletSkill(textureManager);
+    rotateFanState.centerAngle = 90.0f;
 }
 
 Boss1Fight::~Boss1Fight()
 {
-    delete bulletPattern;
+    delete bulletSkill;
 }
 
 void Boss1Fight::update(float deltaTime, SDL_FPoint bossPos, BulletManager &manager, SDL_FPoint playerPos)
 {
-    timer += deltaTime;
-    if(timer > 1.0f)
+    fightTimer += deltaTime;
+    if(fightTimer < 10.0f)
     {
         // bulletPattern->shootCircle(manager, bossPos, 50, BulletType::granBlue);
-        bulletPattern->shootAimed(manager, bossPos, playerPos, BulletType::granBlue);
-        timer = 0;
+        //bulletSkill->Spiral(spiralState, deltaTime, manager, bossPos, 0.01, 5, BulletType::granBlue);
+        
+        bulletSkill->RotateFan(rotateFanState, deltaTime, manager, bossPos, 1.0f, 90, 60, 10, BulletType::granBlue);
+        // timer = 0;
     }
     // if(timer > 2.0f)
     // {

@@ -20,6 +20,7 @@ public:
                 float spreadAngle, int cnt, BulletType type); //扇形
     void shootSpread(BulletManager& manager, SDL_FPoint position, int cnt, int length, BulletType type); //横排
     void shootAimed(BulletManager& manager, SDL_FPoint startPos, SDL_FPoint targetPos, BulletType type); //自机狙
+    void shootDirection(BulletManager& manager, SDL_FPoint position, float angle, BulletType type); //指定方向发射
 private:
     void createBullet(BulletManager& manager, SDL_FPoint position, SDL_FPoint direction, BulletType type);
     std::unordered_map<std::string, SDL_Texture*>& bulletTextureManager;
