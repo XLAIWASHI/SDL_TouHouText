@@ -105,11 +105,9 @@ void Boss1Fight::enterPattern1()
 
 void Boss1Fight::updatePattern1(float deltaTime, BulletManager &manager, SDL_FPoint playerPos, SDL_FPoint bossPos)
 {
-    bulletSkill->Spiral(spiralState, deltaTime, manager, bossPos, 0.01f, 5, BulletType::granBlue);
-    bulletSkill->RotateFan(rotateFanState, deltaTime, manager, bossPos, 1.0f, 90, 60, 20, BulletType::granBlue);
-    boss->setTargetPosition(345, 500);
-    boss->updateMoveTo(deltaTime);
-    if(stageTimer > 5.0f)
+    bulletSkill->Spiral(spiralState, deltaTime, manager, bossPos, 0.01f, 10, BulletType::granBlue);
+    bulletSkill->RotateFan(rotateFanState, deltaTime, manager, bossPos, 1.0f, 90, 60, 10, BulletType::granBlue);
+    if(stageTimer > 15.0f)
     {
         changeStage(Boss1Stage::Pattern2);
     }

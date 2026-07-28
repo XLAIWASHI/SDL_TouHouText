@@ -13,6 +13,7 @@ public:
     void update(float deltaTime);
     void render(SDL_Renderer* renderer);
     void clear();
+    std::list<EnemyBullet*>* getBullets() { return &bullets; }
 private:
     std::list<EnemyBullet*> bullets;
 };

@@ -107,3 +107,5 @@ BossSkill
 BulletPattern
     ↓
 BulletManager
+
+boss技能大体上完成，下一步是优化移动逻辑 2026.7.28

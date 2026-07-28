@@ -154,6 +154,8 @@ void SceneMain::update(float deltaTime)
     if(boss != nullptr)
     {
         boss->update(deltaTime);
+        ColliderBossBullet();
+        ColliderBoss();
     }
     if(bossFightController != nullptr && boss != nullptr)
     {
@@ -441,6 +443,15 @@ void SceneMain::updatePlayer(float deltaTime)
     {
         return;
     }
+    if(invincible)
+    {
+        invincibleTimer += deltaTime;
+        if(invincibleTimer >= 1.0f)
+        {
+            invincibleTimer = 0.0f;
+            invincible = false;
+        }
+    }
     if(player.currentHealth <= 0)
     {
         SDL_SetTextureAlphaMod(playerPoint.texture, 0);//判定点透明
@@ -600,10 +611,10 @@ void SceneMain::updateEnemiesBullet(float deltaTime)
         bullet->position.y += bullet->speed * bullet->direction.y * deltaTime;
 
         //判断是否超界
-        if( bullet->position.y > margin + game.getPlayAreaHeight() + bullet->height ||
+        if( bullet->position.y > margin + game.getPlayAreaHeight() - bullet->height ||
             bullet->position.y < margin ||
             bullet->position.x < margin ||
-            bullet->position.x > margin + game.getPlayAreaWidth() + bullet->width)
+            bullet->position.x > margin + game.getPlayAreaWidth() - bullet->width)
             {
                 delete bullet;
                 it = EnemiesBullets.erase(it);
@@ -624,7 +635,7 @@ void SceneMain::updateEnemiesBullet(float deltaTime)
                 };
                 if(SDL_HasIntersection(&playerPointRect, &bulletRect))
                 {
-                    player.currentHealth -= bullet->damage;
+                    playerTakeDamage(bullet->damage);
                     delete bullet;
                     it = EnemiesBullets.erase(it);
 
@@ -1124,7 +1135,87 @@ bool SceneMain::ColliderEnemies(Enemy *enemy)
     return false;
 }
 
+void SceneMain::ColliderBossBullet()
+{
+    BossBullets = bulletManager->getBullets();
+    for(auto it = BossBullets->begin(); it != BossBullets->end(); )
+    {
+        EnemyBullet* bullet = *it;
+        
+        if( bullet->position.y > margin + game.getPlayAreaHeight() - bullet->height||
+            bullet->position.y < margin ||
+            bullet->position.x < margin ||
+            bullet->position.x > margin + game.getPlayAreaWidth() - bullet->width)
+        {
+            delete bullet;
+            it = BossBullets->erase(it);
+        }
+        else
+        {
+            SDL_Rect playerPointRect = {
+                static_cast<int>(playerPoint.position.x),
+                static_cast<int>(playerPoint.position.y),
+                playerPoint.w,
+                playerPoint.h
+            };
+            SDL_Rect bulletRect = {
+                static_cast<int>(bullet->position.x),
+                static_cast<int>(bullet->position.y),
+                bullet->width,
+                bullet->height
+            };
+            if(SDL_HasIntersection(&playerPointRect, &bulletRect))
+            {
+                playerTakeDamage(bullet->damage);
+                delete bullet;
+                it = BossBullets->erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+    }
+}
+
+void SceneMain::ColliderBoss()
+{
+    if(boss == nullptr)
+    {
+        return;
+    }
+    SDL_Rect playerPointRect = {
+        static_cast<int>(playerPoint.position.x),
+        static_cast<int>(playerPoint.position.y),
+        playerPoint.w,
+        playerPoint.h
+    };
+    SDL_Rect bossRect = {
+        static_cast<int>(boss->getBossPos().x),
+        static_cast<int>(boss->getBossPos().y),
+        boss->getBossWidth(),
+        boss->getBossHeight()
+    };
+    if(SDL_HasIntersection(&playerPointRect, &bossRect))
+    {
+        playerTakeDamage(1);
+    }
+}
+
 void SceneMain::enemyExplode(Enemy *enemy)
 {
     delete enemy;
+}
+
+void SceneMain::playerTakeDamage(int damage)
+{
+    if(invincible)
+    {
+        return;
+    }
+
+    player.currentHealth -= damage;
+    invincible = true;
+    invincibleTimer = 0.0f;
+    
 }

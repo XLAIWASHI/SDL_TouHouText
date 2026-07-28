@@ -24,7 +24,10 @@ public:
         position.y + static_cast<int>(height * 1.5 / 2)}; }
     BossType getBossType() { return type; }
 
-    void updateMoveTo(float deltaTime);
+    //getting
+    int getBossWidth() { return width; }
+    int getBossHeight() { return height; }
+    SDL_FPoint getBossPos() { return position; }
 private:
     void changeAnimation(BossAnimationType type);
     SDL_Rect getBossFrameRect();
@@ -33,12 +36,12 @@ private:
 
     void updateBossAnimation(float deltaTime);
     void updateMove(float deltaTime);
-    
+    void updateMoveTo(float deltaTime);
     void updateHorizontal(float deltaTime);
     void updateCircle(float deltaTime);
 
     void renderBossAnimation(SDL_Renderer* renderer);
-    
+
     BossMoveType moveType = BossMoveType::enter;
     BossType type = BossType::boss1;
     bool isDead = false;
@@ -52,7 +55,6 @@ private:
     int height = 80;
     SDL_RendererFlip isFlip = SDL_FLIP_NONE;
     Pattern* currentPattern = nullptr;
-
     int currentFrame = 0;
     int totalFrame = 0;
     Uint32 starTime = 0;

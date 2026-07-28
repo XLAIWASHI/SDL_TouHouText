@@ -56,7 +56,12 @@ private:
 
     //碰撞检测
     bool ColliderEnemies(Enemy* enemy);
+    void ColliderBossBullet();
+    void ColliderBoss();
     void enemyExplode(Enemy* enemy);
+
+    //玩家减血
+    void playerTakeDamage(int damage);
 
     //发射子弹
     void shootPlayer();
@@ -84,6 +89,8 @@ private:
     Player player;
     PlayerPoint playerPoint;
     bool isDead = false;//玩家是否死亡
+    bool invincible = false;//玩家是否无敌
+    float invincibleTimer = 0.0f;
     Enemy enemyTemplate;
 
     //容器相关
@@ -92,6 +99,7 @@ private:
     std::list<PlayerBullet*> PlayerBullets;//玩家子弹库
     std::list<Enemy*> Enemies;//敌人库
     std::list<EnemyBullet*> EnemiesBullets;//敌人子弹库
+    std::list<EnemyBullet*>* BossBullets;
 
     bool isPressed = false;//判断是否按下切换按钮
 
