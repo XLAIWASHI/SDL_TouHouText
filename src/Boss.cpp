@@ -22,7 +22,7 @@ bool Boss::init(SDL_Texture* texture, float x, float y)
     SDL_QueryTexture(this->texture, nullptr, nullptr, &texW, &texH);
     this->totalFrame = texW / width;
     starTime = SDL_GetTicks();
-    startEnter(300.0f, 300.0f);
+    // startEnter(300.0f, 300.0f);
     // startHorizontal(0.0f, 400.0f);
     // startCircle(80);
     return true;
@@ -83,10 +83,9 @@ SDL_Rect Boss::getBossFrameRect()
     return src;
 }
 
-void Boss::startEnter(float x, float y)
+void Boss::startEnter()
 {
     moveType = BossMoveType::enter;
-    setTargetPosition(x, y);
 }
 
 void Boss::setTargetPosition(float x, float y)

@@ -21,7 +21,7 @@ void BossFightController::createFight(BossType type, Boss *boss)
     switch(type)
     {
         case BossType::boss1:
-            currentBossFight = new Boss1Fight(textureManager);
+            currentBossFight = new Boss1Fight(textureManager, boss);
             break;
     }
 }
@@ -33,5 +33,5 @@ void BossFightController::update(float deltaTime, BulletManager &manager, SDL_FP
         return;
     }
     this->playerPos = playerPos;
-    currentBossFight->update(deltaTime, boss->getBossPosition(), manager, this->playerPos);
+    currentBossFight->update(deltaTime, manager, this->playerPos, boss->getBossPosition());
 }

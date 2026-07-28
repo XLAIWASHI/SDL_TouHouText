@@ -8,7 +8,7 @@ class BossFight
 {
 public:
     virtual ~BossFight() = default;
-    virtual void update(float deltaTime, SDL_FPoint bossPos, BulletManager &manager, SDL_FPoint playerPos) = 0;
+    virtual void update(float deltaTime, BulletManager &manager, SDL_FPoint playerPos, SDL_FPoint bossPos) = 0;
 
 };
 

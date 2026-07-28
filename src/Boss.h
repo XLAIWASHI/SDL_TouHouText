@@ -18,35 +18,36 @@ public:
     void update(float deltaTime);
     void render(SDL_Renderer* renderer);
     void takeDamage(int damage); //收到伤害
-    void startEnter(float x, float y);
+    void startEnter();
+    void setTargetPosition(float x, float y); //设置目标位置
     SDL_FPoint getBossPosition() { return {position.x + static_cast<int>(width * 1.5 / 2),
         position.y + static_cast<int>(height * 1.5 / 2)}; }
     BossType getBossType() { return type; }
+
+    void updateMoveTo(float deltaTime);
 private:
     void changeAnimation(BossAnimationType type);
     SDL_Rect getBossFrameRect();
-    void setTargetPosition(float x, float y);
     void startHorizontal(float left, float right);
     void startCircle(float radius);
 
     void updateBossAnimation(float deltaTime);
     void updateMove(float deltaTime);
-    void updateMoveTo(float deltaTime);
+    
     void updateHorizontal(float deltaTime);
     void updateCircle(float deltaTime);
 
     void renderBossAnimation(SDL_Renderer* renderer);
-
     
-    bool isDead = false;
     BossMoveType moveType = BossMoveType::enter;
     BossType type = BossType::boss1;
-
+    bool isDead = false;
     SDL_Texture* texture = nullptr;
     SDL_FPoint position = {0.0f, 0.0f};
     SDL_FPoint targetPosition = {0.0f, 0.0f};
     float moveSpeed = 200.0f;
-    int health = 100;
+    int health = 10000;
+    bool isFinish = false;
     int width = 64;
     int height = 80;
     SDL_RendererFlip isFlip = SDL_FLIP_NONE;
