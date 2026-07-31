@@ -51,6 +51,8 @@ private:
     RotateFanState rotateFanState;
     Boss* boss = nullptr;
     Boss1Stage stage = Boss1Stage::None;
+    int PLAYAREA_W = 0;
+    int PLAYAREA_H = 0;
 };
 
 #endif

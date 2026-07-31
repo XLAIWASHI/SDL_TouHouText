@@ -12,7 +12,7 @@ class Pattern;
 class Boss
 {
 public:
-    Boss();
+    Boss(int play_w, int play_h);
     ~Boss();
     bool init(SDL_Texture* texture, float x, float y);
     void update(float deltaTime);
@@ -28,6 +28,9 @@ public:
     int getBossWidth() { return width; }
     int getBossHeight() { return height; }
     SDL_FPoint getBossPos() { return position; }
+
+    //随机移动
+    void randomMove();
 private:
     void changeAnimation(BossAnimationType type);
     SDL_Rect getBossFrameRect();
@@ -73,6 +76,9 @@ private:
     float angle = 0.0f; //当前角度
     float angularSpeed = 90.0f; //每秒90度
     
+    //游玩区
+    int play_w = 0;
+    int play_h = 0;
 };
 
 

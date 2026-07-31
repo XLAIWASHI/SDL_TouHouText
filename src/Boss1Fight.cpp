@@ -107,8 +107,11 @@ void Boss1Fight::updatePattern1(float deltaTime, BulletManager &manager, SDL_FPo
 {
     bulletSkill->Spiral(spiralState, deltaTime, manager, bossPos, 0.01f, 10, BulletType::granBlue);
     bulletSkill->RotateFan(rotateFanState, deltaTime, manager, bossPos, 1.0f, 90, 60, 10, BulletType::granBlue);
+    if(stageTimer >= 0 && stageTimer <= 1)
+        boss->randomMove();
     if(stageTimer > 15.0f)
     {
+        
         changeStage(Boss1Stage::Pattern2);
     }
 }

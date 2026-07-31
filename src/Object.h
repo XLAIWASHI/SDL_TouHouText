@@ -69,7 +69,8 @@ enum class BossMoveType
     idle, //固定位置
     moveto, //移动到一个点
     horizontal, //左右移动
-    circle //环形移动
+    circle, //环形移动
+    COUNT
 };
 
 enum class ItemType

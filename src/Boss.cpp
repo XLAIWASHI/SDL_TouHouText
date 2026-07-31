@@ -1,7 +1,10 @@
 #include "Boss.h"
+#include <random>
 
-Boss::Boss()
+Boss::Boss(int play_w, int play_h)
 {
+    this->play_w = play_w;
+    this->play_h = play_h;
 }
 
 Boss::~Boss()
@@ -41,6 +44,24 @@ void Boss::render(SDL_Renderer *renderer)
 
 void Boss::takeDamage(int damage)
 {
+}
+
+void Boss::randomMove()
+{
+    BossMoveType type = (BossMoveType)(rand() % (static_cast<int>(BossMoveType::COUNT) - 1));
+    switch(type)
+    {
+        case BossMoveType::horizontal:
+            startHorizontal(100, 700);
+            break;
+        case BossMoveType::circle:
+            startCircle(80);
+            break;
+        case BossMoveType::moveto:
+            setTargetPosition(400, 200);
+            startEnter();
+            break;
+    }
 }
 
 void Boss::changeAnimation(BossAnimationType type)
@@ -244,4 +265,9 @@ void Boss::renderBossAnimation(SDL_Renderer *renderer)
         static_cast<int>(height * 1.5)
     };
     SDL_RenderCopyEx(renderer, texture, &src, &dst, 0, nullptr, isFlip);
+}
+
+void Boss::setRandomTargetPosition()
+{
+    
 }
