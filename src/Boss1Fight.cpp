@@ -99,7 +99,7 @@ void Boss1Fight::enterPattern1()
 void Boss1Fight::updatePattern1(float deltaTime, BulletManager &manager, SDL_FPoint playerPos, SDL_FPoint bossPos)
 {
     int dmg = p1HealthAtStart - boss->getHealth();
-    if(dmg >= 100)
+    if(dmg >= 1000)
     {
         changeStage(Boss1Stage::Pattern2);
         return;
