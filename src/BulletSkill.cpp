@@ -23,3 +23,13 @@ void BulletSkill::RotateFan(RotateFanState &state, float deltaTime, BulletManage
         state.centerAngle += angleStep;
     }
 }
+
+void BulletSkill::Aimed(BulletManager &manager, SDL_FPoint from, SDL_FPoint to, BulletType type)
+{
+    bulletPattern->shootAimed(manager, from, to, type);
+}
+
+void BulletSkill::Circle(BulletManager &manager, SDL_FPoint position, int cnt, BulletType type)
+{
+    bulletPattern->shootCircle(manager, position, cnt, type);
+}

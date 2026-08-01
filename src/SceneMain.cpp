@@ -84,7 +84,7 @@ void SceneMain::init()
     BulletTextureManager["EnemyBullet3"] = IMG_LoadTexture(game.getRenderer(), "assets\\image\\bullet\\粒弹\\粒弹30.png");
     BulletTextureManager["EnemyBullet4"] = IMG_LoadTexture(game.getRenderer(), "assets\\image\\bullet\\粒弹\\粒弹300.png");
     
-    bulletManager = new BulletManager();
+    bulletManager = new BulletManager(margin, game.getPlayAreaWidth(), game.getPlayAreaHeight());
 
     for(auto& bullet : BulletTextureManager)
     {
@@ -155,11 +155,22 @@ void SceneMain::update(float deltaTime)
     {
         boss->update(deltaTime);
         ColliderBossBullet();
-        ColliderBoss();
-    }
-    if(bossFightController != nullptr && boss != nullptr)
-    {
-        bossFightController->update(deltaTime, *bulletManager, {player.position.x + player.width / 2, player.position.y + player.height / 2});
+        if(!boss->isBossDead())
+        {
+            ColliderBoss();
+            if(bossFightController != nullptr)
+                bossFightController->update(deltaTime, *bulletManager, {player.position.x + player.width / 2, player.position.y + player.height / 2});
+        }
+        else if(bulletManager->isEmpty())
+        {
+            delete boss;
+            boss = nullptr;
+            if(bossFightController != nullptr)
+            {
+                delete bossFightController;
+                bossFightController = nullptr;
+            }
+        }
     }
     //生成敌人
     updateWave(deltaTime);
@@ -522,7 +533,6 @@ void SceneMain::updatePlayerBullet(float deltaTime)
     {
         PlayerBullet* bullet = *it;
         bullet->position.y -= bullet->speed * deltaTime;
-        //判断子弹是否超出屏幕
         if(bullet->position.y < margin)
         {
             delete bullet;
@@ -530,7 +540,6 @@ void SceneMain::updatePlayerBullet(float deltaTime)
         }
         else
         {
-            //判断是否命中敌人
             bool hit = false;
              SDL_Rect bulletRect = {
                 static_cast<int>(bullet->position.x),
@@ -553,6 +562,22 @@ void SceneMain::updatePlayerBullet(float deltaTime)
                     it = PlayerBullets.erase(it);
                     hit = true;
                     break;
+                }
+            }
+            if(!hit && boss != nullptr)
+            {
+                SDL_Rect bossRect = {
+                    static_cast<int>(boss->getBossPos().x),
+                    static_cast<int>(boss->getBossPos().y),
+                    boss->getBossWidth(),
+                    boss->getBossHeight()
+                };
+                if(SDL_HasIntersection(&bulletRect, &bossRect))
+                {
+                    boss->takeDamage(bullet->damage);
+                    delete bullet;
+                    it = PlayerBullets.erase(it);
+                    hit = true;
                 }
             }
             if(!hit)
@@ -941,7 +966,7 @@ void SceneMain::spawnBoss(BossType type, float x, float y)
     {
         return;
     }
-    boss = new Boss();
+    boss = new Boss(game.getPlayAreaWidth(), game.getPlayAreaHeight(), margin);
     if(!boss->init(BossTextureManager["boss1"], x, y))
     {
         delete boss;

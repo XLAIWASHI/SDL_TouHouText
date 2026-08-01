@@ -12,7 +12,7 @@ class Pattern;
 class Boss
 {
 public:
-    Boss(int play_w, int play_h);
+    Boss(int play_w, int play_h, int margin);
     ~Boss();
     bool init(SDL_Texture* texture, float x, float y);
     void update(float deltaTime);
@@ -28,9 +28,13 @@ public:
     int getBossWidth() { return width; }
     int getBossHeight() { return height; }
     SDL_FPoint getBossPos() { return position; }
+    int getHealth() { return health; }
+    bool isBossDead() { return isDead; }
+    void setDead() { isDead = true; }
 
     //随机移动
     void randomMove();
+    void startAttackAnimation();
 private:
     void changeAnimation(BossAnimationType type);
     SDL_Rect getBossFrameRect();
@@ -45,6 +49,8 @@ private:
 
     void renderBossAnimation(SDL_Renderer* renderer);
 
+    void setRandomTargetPosition();
+
     BossMoveType moveType = BossMoveType::enter;
     BossType type = BossType::boss1;
     bool isDead = false;
@@ -52,7 +58,7 @@ private:
     SDL_FPoint position = {0.0f, 0.0f};
     SDL_FPoint targetPosition = {0.0f, 0.0f};
     float moveSpeed = 200.0f;
-    int health = 10000;
+    int health = 1000;
     bool isFinish = false;
     int width = 64;
     int height = 80;
@@ -79,6 +85,7 @@ private:
     //游玩区
     int play_w = 0;
     int play_h = 0;
+    int margin = 32;
 };
 
 

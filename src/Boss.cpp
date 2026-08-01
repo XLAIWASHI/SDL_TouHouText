@@ -1,10 +1,11 @@
 #include "Boss.h"
 #include <random>
 
-Boss::Boss(int play_w, int play_h)
+Boss::Boss(int play_w, int play_h, int margin)
 {
     this->play_w = play_w;
     this->play_h = play_h;
+    this->margin = margin;
 }
 
 Boss::~Boss()
@@ -25,14 +26,12 @@ bool Boss::init(SDL_Texture* texture, float x, float y)
     SDL_QueryTexture(this->texture, nullptr, nullptr, &texW, &texH);
     this->totalFrame = texW / width;
     starTime = SDL_GetTicks();
-    // startEnter(300.0f, 300.0f);
-    // startHorizontal(0.0f, 400.0f);
-    // startCircle(80);
     return true;
 }
 
 void Boss::update(float deltaTime)
 {
+    if(isDead) return;
     updateMove(deltaTime);
     updateBossAnimation(deltaTime);
 }
@@ -44,23 +43,45 @@ void Boss::render(SDL_Renderer *renderer)
 
 void Boss::takeDamage(int damage)
 {
+    health -= damage;
+    if(health < 0) health = 0;
 }
 
 void Boss::randomMove()
 {
-    BossMoveType type = (BossMoveType)(rand() % (static_cast<int>(BossMoveType::COUNT) - 1));
-    switch(type)
+    float renderW = width * 1.5f;
+    float renderH = height * 1.5f;
+    int r = 2 + (rand() % 3);
+    switch(r)
     {
-        case BossMoveType::horizontal:
-            startHorizontal(100, 700);
-            break;
-        case BossMoveType::circle:
-            startCircle(80);
-            break;
-        case BossMoveType::moveto:
-            setTargetPosition(400, 200);
+        case 2:
+        {
+            float tx = margin + (rand() % static_cast<int>(play_w - renderW));
+            float ty = margin + (rand() % static_cast<int>(play_h / 2 - renderH));
+            setTargetPosition(tx, ty);
             startEnter();
             break;
+        }
+        case 3:
+        {
+            float left = margin;
+            float right = margin + play_w - renderW;
+            startHorizontal(left, right);
+            break;
+        }
+        case 4:
+        {
+            float rad = 80.0f;
+            float maxRadLeft = (position.x - margin) / 2.0f;
+            float maxRadTop = position.y - margin;
+            float maxRadBottom = margin + play_h / 2 - renderH - position.y;
+            if(rad > maxRadLeft) rad = maxRadLeft;
+            if(rad > maxRadTop) rad = maxRadTop;
+            if(rad > maxRadBottom) rad = maxRadBottom;
+            if(rad < 20.0f) rad = 20.0f;
+            startCircle(rad);
+            break;
+        }
     }
 }
 
@@ -93,6 +114,8 @@ SDL_Rect Boss::getBossFrameRect()
             isFlip = SDL_FLIP_NONE;
             break;
         case BossAnimationType::attack:
+            posY = 2;
+            isFlip = SDL_FLIP_NONE;
             break;
     }
     SDL_Rect src = {
@@ -125,9 +148,10 @@ void Boss::startHorizontal(float left, float right)
 void Boss::startCircle(float radius)
 {
     moveType = BossMoveType::circle;
-    center = position;
     this->radius = radius;
     angle = 0;
+    center.x = position.x - radius;
+    center.y = position.y;
     lastPosition = position;
 }
 
@@ -139,12 +163,16 @@ void Boss::updateBossAnimation(float deltaTime)
     {
         starTime = currentTime;
         if (currentAnimationType == BossAnimationType::left ||
-            currentAnimationType == BossAnimationType::right)
+            currentAnimationType == BossAnimationType::right ||
+            currentAnimationType == BossAnimationType::attack)
         {
             if(firstMoveLoop)
             {
                 firstMoveLoop = false;
-                loopStartFrame = 3;
+                if(currentAnimationType == BossAnimationType::attack)
+                    loopStartFrame = 2;
+                else
+                    loopStartFrame = 3;
             }
             currentFrame = loopStartFrame;
         }
@@ -172,6 +200,13 @@ void Boss::updateMove(float deltaTime)
             updateCircle(deltaTime);
             break;
     }
+
+    float renderW = width * 1.5f;
+    float renderH = height * 1.5f;
+    if(position.x < margin) position.x = margin;
+    if(position.x > margin + play_w - renderW) position.x = margin + play_w - renderW;
+    if(position.y < margin) position.y = margin;
+    if(position.y > margin + play_h / 2 - renderH) position.y = margin + play_h / 2 - renderH;
 }
 
 void Boss::updateMoveTo(float deltaTime)
@@ -265,6 +300,12 @@ void Boss::renderBossAnimation(SDL_Renderer *renderer)
         static_cast<int>(height * 1.5)
     };
     SDL_RenderCopyEx(renderer, texture, &src, &dst, 0, nullptr, isFlip);
+}
+
+void Boss::startAttackAnimation()
+{
+    moveType = BossMoveType::idle;
+    changeAnimation(BossAnimationType::attack);
 }
 
 void Boss::setRandomTargetPosition()
