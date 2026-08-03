@@ -101,8 +101,6 @@ private:
     std::list<EnemyBullet*> EnemiesBullets;//敌人子弹库
     std::list<EnemyBullet*>* BossBullets;
 
-    bool isPressed = false;//判断是否按下切换按钮
-
     //随机数相关
     std::mt19937 gen;
     std::uniform_real_distribution<float> dis;

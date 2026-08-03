@@ -25,8 +25,11 @@ enum class Pattern1SubPhase
     SkillB,
     Move2,
     SkillC,
+    SkillF,
     Move3,
     SkillD,
+    Move4,
+    SkillE,
     Done
 };
 
@@ -36,10 +39,13 @@ enum class Pattern2SubPhase
     SkillA,
     Move1,
     SkillB,
+    SkillF,
     Move2,
     SkillC,
     Move3,
     SkillD,
+    Move4,
+    SkillE,
     Done
 };
 
@@ -53,8 +59,11 @@ enum class Pattern3SubPhase
     SkillC,
     Move3,
     SkillD,
+    SkillG,
     Move4,
     SkillE,
+    Move5,
+    SkillF,
     Done
 };
 
@@ -100,6 +109,7 @@ private:
     SpiralState spiralState3;
     RotateFanState rotateFanState;
     RotateFanState rotateFanState2;
+    SweepFanState sweepFanState;
     float aimedTimer = 0.0f;
     float circleTimer = 0.0f;
     Boss* boss = nullptr;

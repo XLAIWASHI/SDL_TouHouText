@@ -58,7 +58,7 @@ private:
     SDL_FPoint position = {0.0f, 0.0f};
     SDL_FPoint targetPosition = {0.0f, 0.0f};
     float moveSpeed = 200.0f;
-    int health = 1000;
+    int health = 2000;
     bool isFinish = false;
     int width = 64;
     int height = 80;

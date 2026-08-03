@@ -24,6 +24,50 @@ void BulletSkill::RotateFan(RotateFanState &state, float deltaTime, BulletManage
     }
 }
 
+void BulletSkill::SweepFan(SweepFanState &state, float deltaTime, BulletManager &manager, SDL_FPoint position, float interval, float spreadAngle, int cnt, float minAngle, float maxAngle, float sweepSpeed, BulletType type)
+{
+    state.currentAngle += sweepSpeed * deltaTime * state.sweepDir;
+    if(state.currentAngle >= maxAngle)
+    {
+        state.currentAngle = maxAngle;
+        state.sweepDir = -1.0f;
+    }
+    else if(state.currentAngle <= minAngle)
+    {
+        state.currentAngle = minAngle;
+        state.sweepDir = 1.0f;
+    }
+
+    state.timer += deltaTime;
+    if(state.timer >= interval)
+    {
+        bulletPattern->shootFan(manager, position, state.currentAngle, spreadAngle, cnt, type);
+        state.timer = 0;
+    }
+}
+
+void BulletSkill::Sweep(SweepFanState &state, float deltaTime, BulletManager &manager, SDL_FPoint position, float interval, float angleStep, float minAngle, float maxAngle, BulletType type)
+{
+    state.timer += deltaTime;
+    if(state.timer >= interval)
+    {
+        bulletPattern->shootDirection(manager, position, state.currentAngle, type);
+        state.timer = 0;
+        state.currentAngle += angleStep * state.sweepDir;
+
+        if(state.currentAngle >= maxAngle)
+        {
+            state.currentAngle = maxAngle;
+            state.sweepDir = -1.0f;
+        }
+        else if(state.currentAngle <= minAngle)
+        {
+            state.currentAngle = minAngle;
+            state.sweepDir = 1.0f;
+        }
+    }
+}
+
 void BulletSkill::Aimed(BulletManager &manager, SDL_FPoint from, SDL_FPoint to, BulletType type)
 {
     bulletPattern->shootAimed(manager, from, to, type);
