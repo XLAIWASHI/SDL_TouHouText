@@ -14,4 +14,11 @@ struct RotateFanState
     float centerAngle = 0.0f; // 中心角度
 };
 
+struct SweepFanState
+{
+    float timer = 0.0f; // 发射计时
+    float currentAngle = 0.0f; // 当前中心角度
+    float sweepDir = 1.0f; // 扫射方向 1向右 -1向左
+};
+
 #endif

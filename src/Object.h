@@ -21,9 +21,7 @@ enum class PlayerAnimationType
 enum class PlayerBulletType
 {
     bullet1,
-    bullet2,
-    bullet3,
-    COUNT
+    bullet2
 };
 
 enum class BossAnimationType
@@ -69,7 +67,8 @@ enum class BossMoveType
     idle, //固定位置
     moveto, //移动到一个点
     horizontal, //左右移动
-    circle //环形移动
+    circle, //环形移动
+    COUNT
 };
 
 enum class ItemType
@@ -151,6 +150,8 @@ struct PlayerBullet
 {
     SDL_Texture* texture = nullptr;
     SDL_FPoint position = {0.0f, 0.0f};
+    SDL_FPoint direction = {0.0f, -1.0f};
+    PlayerBulletType type = PlayerBulletType::bullet1;
     int width = 0;
     int height = 0;
     int speed = 600;

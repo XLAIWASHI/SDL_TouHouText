@@ -79,7 +79,9 @@ void BulletPattern::createBullet(BulletManager &manager, SDL_FPoint position, SD
 {
     EnemyBullet* bullet = new EnemyBullet();
     bullet->direction = direction;
-    bullet->texture = bulletTextureManager["EnemyBullet1"];
+    int colorIdx = 1 + (rand() % 4);
+    std::string key = "EnemyBullet" + std::to_string(colorIdx);
+    bullet->texture = bulletTextureManager[key];
     bullet->type = type;
     SDL_QueryTexture(bullet->texture, nullptr, nullptr, &bullet->width, &bullet->height);
     bullet->width *= 1.5;

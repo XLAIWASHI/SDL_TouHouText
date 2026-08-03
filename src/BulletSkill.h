@@ -22,6 +22,12 @@ public:
                 float interval, float angleStep, BulletType type); // interval发射间隔 螺旋
     void RotateFan(RotateFanState& state, float deltaTime, BulletManager& manager, SDL_FPoint position,
                 float interval, float angleStep, float spreadAngle, int cnt, BulletType type); // 旋转扇形
+    void SweepFan(SweepFanState& state, float deltaTime, BulletManager& manager, SDL_FPoint position,
+                float interval, float spreadAngle, int cnt, float minAngle, float maxAngle, float sweepSpeed, BulletType type); // 扫射
+    void Sweep(SweepFanState& state, float deltaTime, BulletManager& manager, SDL_FPoint position,
+                float interval, float angleStep, float minAngle, float maxAngle, BulletType type); // 单发扫射
+    void Aimed(BulletManager& manager, SDL_FPoint from, SDL_FPoint to, BulletType type); // 自机狙
+    void Circle(BulletManager& manager, SDL_FPoint position, int cnt, BulletType type); // 全圆
 
 private:
     BulletPattern* bulletPattern = nullptr;

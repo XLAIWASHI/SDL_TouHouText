@@ -12,7 +12,7 @@ class Pattern;
 class Boss
 {
 public:
-    Boss();
+    Boss(int play_w, int play_h, int margin);
     ~Boss();
     bool init(SDL_Texture* texture, float x, float y);
     void update(float deltaTime);
@@ -24,7 +24,17 @@ public:
         position.y + static_cast<int>(height * 1.5 / 2)}; }
     BossType getBossType() { return type; }
 
-    void updateMoveTo(float deltaTime);
+    //getting
+    int getBossWidth() { return width; }
+    int getBossHeight() { return height; }
+    SDL_FPoint getBossPos() { return position; }
+    int getHealth() { return health; }
+    bool isBossDead() { return isDead; }
+    void setDead() { isDead = true; }
+
+    //随机移动
+    void randomMove();
+    void startAttackAnimation();
 private:
     void changeAnimation(BossAnimationType type);
     SDL_Rect getBossFrameRect();
@@ -33,12 +43,14 @@ private:
 
     void updateBossAnimation(float deltaTime);
     void updateMove(float deltaTime);
-    
+    void updateMoveTo(float deltaTime);
     void updateHorizontal(float deltaTime);
     void updateCircle(float deltaTime);
 
     void renderBossAnimation(SDL_Renderer* renderer);
-    
+
+    void setRandomTargetPosition();
+
     BossMoveType moveType = BossMoveType::enter;
     BossType type = BossType::boss1;
     bool isDead = false;
@@ -46,13 +58,12 @@ private:
     SDL_FPoint position = {0.0f, 0.0f};
     SDL_FPoint targetPosition = {0.0f, 0.0f};
     float moveSpeed = 200.0f;
-    int health = 10000;
+    int health = 2000;
     bool isFinish = false;
     int width = 64;
     int height = 80;
     SDL_RendererFlip isFlip = SDL_FLIP_NONE;
     Pattern* currentPattern = nullptr;
-
     int currentFrame = 0;
     int totalFrame = 0;
     Uint32 starTime = 0;
@@ -71,6 +82,10 @@ private:
     float angle = 0.0f; //当前角度
     float angularSpeed = 90.0f; //每秒90度
     
+    //游玩区
+    int play_w = 0;
+    int play_h = 0;
+    int margin = 32;
 };
 
 
