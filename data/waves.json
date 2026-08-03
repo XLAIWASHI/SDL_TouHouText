@@ -1,40 +1,20 @@
 {
     "waves": [
         {
-            "duration": 15,
+            "duration": 10,
             "waitClear": false,
             "spawns": [
-                {"type": "enemyBase1", "delay": 0.0, "posX": 0.5, "posY": 0.0, "dirX": 0, "dirY": 1},
-                {"type": "enemyBase1", "delay": 2.0, "posX": 1.0, "posY": 0.0, "dirX": -1, "dirY": 1},
-                {"type": "enemyBase1", "delay": 4.0, "posX": 0.2, "posY": 0.0, "dirX": 1, "dirY": 1},
-                {"type": "enemyBase2", "delay": 5.0, "posX": 0.2, "posY": 0.0, "dirX": 0, "dirY": 1},
-                {"type": "enemyBase2", "delay": 5.0, "posX": 0.4, "posY": 0.0, "dirX": 0, "dirY": 1},
-                {"type": "enemyBase2", "delay": 5.0, "posX": 0.6, "posY": 0.0, "dirX": 0, "dirY": 1},
-                {"type": "enemyBase2", "delay": 5.0, "posX": 0.8, "posY": 0.0, "dirX": 0, "dirY": 1},
-                {"type": "enemyBase3", "delay": 6.0, "posX": 0.4, "posY": 0.0, "dirX": 0, "dirY": 1},
-                {"type": "enemyBase3", "delay": 6.0, "posX": 0.6, "posY": 0.0, "dirX": 0, "dirY": 1},
-                {"type": "enemyBase2", "delay": 8.0, "posX": 0.2, "posY": 0.0, "dirX": 0, "dirY": 1},
-                {"type": "enemyBase2", "delay": 8.0, "posX": 0.4, "posY": 0.0, "dirX": 0, "dirY": 1},
-                {"type": "enemyBase2", "delay": 8.0, "posX": 0.6, "posY": 0.0, "dirX": 0, "dirY": 1},
-                {"type": "enemyBase2", "delay": 8.0, "posX": 0.8, "posY": 0.0, "dirX": 0, "dirY": 1},
-                {"type": "enemyBase3", "delay": 9.0, "posX": 0.4, "posY": 0.0, "dirX": 0, "dirY": 1},
-                {"type": "enemyBase3", "delay": 9.0, "posX": 0.6, "posY": 0.0, "dirX": 0, "dirY": 1},
-                {"type": "enemyBase4", "delay": 9.0, "posX": 0.1, "posY": 0.0, "dirX": 0, "dirY": 1},
-                {"type": "enemyBase4", "delay": 9.0, "posX": 1.0, "posY": 0.0, "dirX": 0, "dirY": 1},
-                {"type": "enemyBase1", "delay": 10.0, "posX": 0.4, "posY": 0.0, "dirX": 0, "dirY": 1},
-                {"type": "enemyBase1", "delay": 10.0, "posX": 0.5, "posY": 0.0, "dirX": 0, "dirY": 1},
-                {"type": "enemyBase1", "delay": 10.0, "posX": 0.6, "posY": 0.0, "dirX": 0, "dirY": 1},
-                {"type": "enemyBase1", "delay": 10.0, "posX": 0.7, "posY": 0.0, "dirX": 0, "dirY": 1}
+                {"type": "enemy" ,"enemyType": "enemyBase1", "delay": 0.0, "posX": 0.5, "posY": 0.0, "dirX": 0, "dirY": 1},
+                {"type": "enemy" ,"enemyType": "enemyBase1", "delay": 2.0, "posX": 1.0, "posY": 0.0, "dirX": -1, "dirY": 1},
+                {"type": "enemy" ,"enemyType": "enemyBase1", "delay": 4.0, "posX": 0.2, "posY": 0.0, "dirX": 1, "dirY": 1},
+                {"type": "enemy" ,"enemyType": "enemyBase1", "delay": 4.0, "posX": 0.5, "posY": 0.0, "dirX": 1, "dirY": 1}
             ]
         },
         {
-            "duration": 15,
-            "waitClear": false,
+            "duration": 0,
+            "waitClear": true,
             "spawns": [
-                {"type": "enemyBase4", "delay": 2.0, "posX": 0.0, "posY": 0.0, "dirX": 1, "dirY": 1},
-                {"type": "enemyBase4", "delay": 2.0, "posX": 1.0, "posY": 0.0, "dirX": -1, "dirY": 1},
-                {"type": "enemyBase4", "delay": 2.0, "posX": 0.5, "posY": 0.0, "dirX": 1, "dirY": 1}
-                
+                {"type": "boss", "bossType": "boss1", "delay": 2.0, "posX": 0.5, "posY": 0.0}
             ]
         }
     ]

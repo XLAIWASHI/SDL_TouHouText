@@ -45,7 +45,16 @@ add_executable(${TARGET}
                 "src/SceneMain.cpp"
                 "src/SceneTitle.cpp"
                 "src/SceneOption.cpp"
-                "src/Utils.cpp")
+                "src/Utils.cpp"
+                "src/Boss.cpp"
+                "src/Pattern.cpp"
+                "src/BulletPattern.cpp"
+                "src/EnemyBullet.cpp"
+                "src/BulletManager.cpp"
+                "src/Boss1Fight.cpp"
+                "src/BossFight.cpp"
+                "src/BossfightController.cpp"
+                "src/BulletSkill.cpp")
 
 #链接库
 target_link_libraries(${TARGET}
