@@ -99,7 +99,7 @@ void Boss1Fight::enterPattern1()
 void Boss1Fight::updatePattern1(float deltaTime, BulletManager &manager, SDL_FPoint playerPos, SDL_FPoint bossPos)
 {
     int dmg = p1HealthAtStart - boss->getHealth();
-    if(dmg >= 700)
+    if(dmg >= 1500)
     {
         changeStage(Boss1Stage::Pattern2);
         return;
@@ -215,7 +215,7 @@ void Boss1Fight::enterPattern2()
 void Boss1Fight::updatePattern2(float deltaTime, BulletManager &manager, SDL_FPoint playerPos, SDL_FPoint bossPos)
 {
     int dmg = p2HealthAtStart - boss->getHealth();
-    if(dmg >= 600)
+    if(dmg >= 1500)
     {
         changeStage(Boss1Stage::Pattern3);
         return;
@@ -340,7 +340,7 @@ void Boss1Fight::enterPattern3()
 void Boss1Fight::updatePattern3(float deltaTime, BulletManager &manager, SDL_FPoint playerPos, SDL_FPoint bossPos)
 {
     int dmg = p3HealthAtStart - boss->getHealth();
-    if(dmg >= 400 || boss->getHealth() <= 0)
+    if(dmg >= 1500 || boss->getHealth() <= 0)
     {
         boss->setDead();
         changeStage(Boss1Stage::Dead);

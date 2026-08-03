@@ -1094,7 +1094,16 @@ void SceneMain::renderPlayerBullet()
             it->width,
             it->height
         };
-        SDL_RenderCopy(game.getRenderer(), it->texture, nullptr, &rect);
+        if(it->type == PlayerBulletType::bullet2)
+        {
+            float angle = atan2f(it->direction.x, -it->direction.y) * 180.0f / M_PI;
+            SDL_Point center = {it->width / 2, it->height / 2};
+            SDL_RenderCopyEx(game.getRenderer(), it->texture, nullptr, &rect, angle, &center, SDL_FLIP_NONE);
+        }
+        else
+        {
+            SDL_RenderCopy(game.getRenderer(), it->texture, nullptr, &rect);
+        }
     }
 }
 
