@@ -8,6 +8,7 @@
 #include <SDL_mixer.h>
 #include <SDL_ttf.h>
 #include <string>
+#include <map>
 
 class Game
 {
@@ -37,11 +38,13 @@ public:
     int getPlayAreaHeight() { return PLAY_AREA_H; }
     bool& getIsRunning() { return isRunning; }
     Settings* getSettings() { return &settings; }
+    std::map<std::string, Mix_Chunk*> getSounds() { return sounds; }
 
     void saveSetting();
     void applySetting();
     //音乐相关
     void playBGM(const std::string& path);
+    void playSound(Mix_Chunk* sound, int channel);
 
 private:
     void loadSetting();
@@ -73,6 +76,8 @@ private:
     TTF_Font* titleFont = nullptr;
     TTF_Font* textFont = nullptr;
 
+    //音效库
+    std::map<std::string, Mix_Chunk*> sounds;
 };
 
 #endif

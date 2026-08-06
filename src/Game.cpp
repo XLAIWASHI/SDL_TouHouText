@@ -71,6 +71,15 @@ void Game::playBGM(const std::string &path)
 
 }
 
+void Game::playSound(Mix_Chunk* sound, int channel)
+{
+    if(sound == nullptr)
+    {
+        return;
+    }
+    Mix_PlayChannel(channel, sound, 0);
+}
+
 void Game::loadSetting()
 {
     std::ifstream file("data\\setting.json");
@@ -179,11 +188,19 @@ void Game::init()
         isRunning = false;
     }
 
+    //加载音效
+    sounds["ok"] = Mix_LoadWAV("assets\\music\\sound\\se_ok00.wav");
+    sounds["cancel"] = Mix_LoadWAV("assets\\music\\sound\\se_cancel00.wav");
+    sounds["select"] = Mix_LoadWAV("assets\\music\\sound\\se_select00.wav");
+
     //载入setting.json
     loadSetting();
 
     currentScene = new SceneTitle;
     currentScene->init();
+
+    //设置音效channel数量
+    Mix_AllocateChannels(32);
 }
 
 void Game::run()
@@ -242,6 +259,16 @@ void Game::clean()
         Mix_FreeMusic(bgm);
         bgm = nullptr;
     }
+
+    //清理音效
+    for(auto sound : sounds)
+    {
+        if(sound.second != nullptr)
+        {
+            Mix_FreeChunk(sound.second);
+        }
+    }
+    sounds.clear();
 
     //清理SDL_mixer
     Mix_CloseAudio();

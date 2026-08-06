@@ -46,6 +46,7 @@ void SceneTitle::init()
         return;
     }
     SDL_QueryTexture(title_menu.texture, nullptr, nullptr, &title_menu.width, &title_menu.height);
+
 }
 
 void SceneTitle::handleEvent(SDL_Event *event)
@@ -54,10 +55,12 @@ void SceneTitle::handleEvent(SDL_Event *event)
     {
         if(event->key.keysym.scancode == SDL_SCANCODE_UP || event->key.keysym.scancode == SDL_SCANCODE_W)
         {
+            game.playSound(game.getSounds()["select"], -1);
             state = (TitleButtonType)((static_cast<int>(state) - 1 + static_cast<int>(TitleButtonType::COUNT)) % static_cast<int>(TitleButtonType::COUNT));
         }
         if(event->key.keysym.scancode == SDL_SCANCODE_DOWN || event->key.keysym.scancode == SDL_SCANCODE_S)
         {
+            game.playSound(game.getSounds()["select"], -1);
             state = (TitleButtonType)((static_cast<int>(state) + 1) % static_cast<int>(TitleButtonType::COUNT));
         }
 
@@ -66,16 +69,20 @@ void SceneTitle::handleEvent(SDL_Event *event)
         {
             if(state == TitleButtonType::start)
             {
+                game.playSound(game.getSounds()["ok"], -1);
                 SceneMain* sceneMain = new SceneMain();
                 game.changeScene(sceneMain);
             }
             else if(state == TitleButtonType::option)
             {
+                game.playSound(game.getSounds()["ok"], -1);
                 SceneOption* sceneOption = new SceneOption();
                 game.changeScene(sceneOption);
             }
             else if(state == TitleButtonType::quit)
             {
+                game.playSound(game.getSounds()["cancel"], -1);
+                SDL_Delay(200);
                 game.getIsRunning() = false;
             }
         }
@@ -114,6 +121,7 @@ void SceneTitle::clean()
     {
         SDL_DestroyTexture(title_menu.texture);
     }
+
 }
 
 void SceneTitle::renderBackground()

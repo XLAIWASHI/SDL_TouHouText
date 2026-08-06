@@ -40,6 +40,7 @@ void SceneOption::init()
         game.getIsRunning() = false;
         return;
     }
+
 }
 
 void SceneOption::handleEvent(SDL_Event *event)
@@ -49,10 +50,12 @@ void SceneOption::handleEvent(SDL_Event *event)
         // 上下键
         if(event->key.keysym.scancode == SDL_SCANCODE_UP || event->key.keysym.scancode == SDL_SCANCODE_W)
         {
+            game.playSound(game.getSounds()["select"], -1);
             state = (OptionButtonType)((static_cast<int>(state) - 1 + static_cast<int>(OptionButtonType::COUNT)) % static_cast<int>(OptionButtonType::COUNT));
         }
         if(event->key.keysym.scancode == SDL_SCANCODE_DOWN || event->key.keysym.scancode == SDL_SCANCODE_S)
         {
+            game.playSound(game.getSounds()["select"], -1);
             state = (OptionButtonType)((static_cast<int>(state) + 1) % static_cast<int>(OptionButtonType::COUNT));
         }
 
@@ -61,6 +64,7 @@ void SceneOption::handleEvent(SDL_Event *event)
         {
             if(state == OptionButtonType::quit)
             {
+                game.playSound(game.getSounds()["cancel"], -1);
                 SceneTitle* sceneTitle = new SceneTitle();
                 game.saveSetting();
                 game.changeScene(sceneTitle);
@@ -78,6 +82,7 @@ void SceneOption::handleEvent(SDL_Event *event)
             }
             if(state == OptionButtonType::mode)
             {
+                game.playSound(game.getSounds()["select"], -1);
                 int index = opt->currentVariant;
                 int size = static_cast<int>(opt->variants.size());
                 opt->currentVariant = ((index - 1) + size) % size;
@@ -86,11 +91,13 @@ void SceneOption::handleEvent(SDL_Event *event)
             }
             if(state == OptionButtonType::vol)
             {
+                game.playSound(game.getSounds()["select"], -1);
                 settings->vol = std::max(0, settings->vol - 8);
                 game.applySetting();
             }
             if(state == OptionButtonType::sevol)
             {
+                game.playSound(game.getSounds()["select"], -1);
                 settings->sevol = std::max(0, settings->sevol - 8);
                 game.applySetting();
             }
@@ -105,6 +112,7 @@ void SceneOption::handleEvent(SDL_Event *event)
             }
             if(state == OptionButtonType::mode)
             {
+                game.playSound(game.getSounds()["select"], -1);
                 int index = opt->currentVariant;
                 int size = static_cast<int>(opt->variants.size());
                 opt->currentVariant = (index + 1) % size;
@@ -113,11 +121,13 @@ void SceneOption::handleEvent(SDL_Event *event)
             }
             if(state == OptionButtonType::vol)
             {
+                game.playSound(game.getSounds()["select"], -1);
                 settings->vol = std::min(128, settings->vol + 8);
                 game.applySetting();
             }
             if(state == OptionButtonType::sevol)
             {
+                game.playSound(game.getSounds()["select"], -1);
                 settings->sevol = std::min(128, settings->sevol + 8);
                 game.applySetting();
             }
@@ -148,6 +158,7 @@ void SceneOption::clean()
     {
         SDL_DestroyTexture(title.texture);
     }
+
 }
 
 void SceneOption::renderBackGround()

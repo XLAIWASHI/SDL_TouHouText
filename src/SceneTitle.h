@@ -8,6 +8,7 @@
 #include <SDL_mixer.h>
 #include <SDL_ttf.h>
 #include <vector>
+#include <string>
 
 class SceneTitle : public Scene
 {
@@ -36,6 +37,7 @@ private:
     const float mult = 2.5f; // 按钮放大倍数
 
     int margin = 0;
+
 
 };
 
