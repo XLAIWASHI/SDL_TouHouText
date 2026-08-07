@@ -2,6 +2,7 @@
 #include "SceneTitle.h"
 #include "SceneMain.h"
 #include <nlohmann/json.hpp>
+#include <iostream>
 
 using json = nlohmann::json;
 
@@ -206,7 +207,7 @@ void Game::init()
     currentScene->init();
 
     //设置音效channel数量
-    Mix_AllocateChannels(32);
+    Mix_AllocateChannels(64);
 }
 
 void Game::run()

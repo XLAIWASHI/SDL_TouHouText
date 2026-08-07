@@ -76,7 +76,7 @@ void SceneMain::init()
     SDL_SetTextureBlendMode(playerPoint.texture, SDL_BLENDMODE_BLEND);
     SDL_SetTextureAlphaMod(playerPoint.texture, 0);//透明
     //子弹资源加载
-    BulletTextureManager["bullet1"] = IMG_LoadTexture(game.getRenderer(), "assets\\image\\bullet\\札弹\\札弹1.png");
+    BulletTextureManager["bullet1"] = IMG_LoadTexture(game.getRenderer(), "assets\\image\\bullet\\札弹\\Sprite-0001.png");
     BulletTextureManager["bullet2"] = IMG_LoadTexture(game.getRenderer(), "assets\\image\\bullet\\札弹\\札弹8.png");
     BulletTextureManager["EnemyBullet1"] = IMG_LoadTexture(game.getRenderer(), "assets\\image\\bullet\\粒弹\\粒弹210.png");
     BulletTextureManager["EnemyBullet2"] = IMG_LoadTexture(game.getRenderer(), "assets\\image\\bullet\\粒弹\\粒弹0.png");
@@ -516,8 +516,6 @@ void SceneMain::updateEnemies(float deltaTime)
 
 void SceneMain::updatePlayerBullet(float deltaTime)
 {
-
-
     for(auto it = PlayerBullets.begin(); it != PlayerBullets.end(); )
     {
         PlayerBullet* bullet = *it;
