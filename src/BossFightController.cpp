@@ -35,3 +35,23 @@ void BossFightController::update(float deltaTime, BulletManager &manager, SDL_FP
     this->playerPos = playerPos;
     currentBossFight->update(deltaTime, manager, this->playerPos, boss->getBossPosition());
 }
+
+bool BossFightController::hasBossStage() const
+{
+    return currentBossFight != nullptr && currentBossFight->hasBossStage();
+}
+
+int BossFightController::getStageCurrentHP() const
+{
+    return currentBossFight ? currentBossFight->getStageCurrentHP() : 0;
+}
+
+int BossFightController::getStageMaxHP() const
+{
+    return currentBossFight ? currentBossFight->getStageMaxHP() : 0;
+}
+
+float BossFightController::getStageTimer() const
+{
+    return currentBossFight ? currentBossFight->getStageTimer() : 0.0f;
+}

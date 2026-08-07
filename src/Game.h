@@ -39,12 +39,13 @@ public:
     bool& getIsRunning() { return isRunning; }
     Settings* getSettings() { return &settings; }
     std::map<std::string, Mix_Chunk*> getSounds() { return sounds; }
+    TTF_Font* getTextFont() { return textFont; }
 
     void saveSetting();
     void applySetting();
     //音乐相关
     void playBGM(const std::string& path);
-    void playSound(Mix_Chunk* sound, int channel);
+    void playSound(Mix_Chunk* sound, int channel, int volume = MIX_MAX_VOLUME);
 
 private:
     void loadSetting();

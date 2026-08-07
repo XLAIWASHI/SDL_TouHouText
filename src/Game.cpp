@@ -71,12 +71,13 @@ void Game::playBGM(const std::string &path)
 
 }
 
-void Game::playSound(Mix_Chunk* sound, int channel)
+void Game::playSound(Mix_Chunk* sound, int channel, int volume)
 {
     if(sound == nullptr)
     {
         return;
     }
+    Mix_VolumeChunk(sound, volume);
     Mix_PlayChannel(channel, sound, 0);
 }
 
@@ -192,6 +193,11 @@ void Game::init()
     sounds["ok"] = Mix_LoadWAV("assets\\music\\sound\\se_ok00.wav");
     sounds["cancel"] = Mix_LoadWAV("assets\\music\\sound\\se_cancel00.wav");
     sounds["select"] = Mix_LoadWAV("assets\\music\\sound\\se_select00.wav");
+    sounds["plst"] = Mix_LoadWAV("assets\\music\\sound\\se_plst00.wav");
+    sounds["tan"] = Mix_LoadWAV("assets\\music\\sound\\se_tan00.wav");
+    sounds["pldead"] = Mix_LoadWAV("assets\\music\\sound\\se_pldead00.wav");
+    sounds["enep00"] = Mix_LoadWAV("assets\\music\\sound\\se_enep00.wav");
+    sounds["enep01"] = Mix_LoadWAV("assets\\music\\sound\\se_enep01.wav");
 
     //载入setting.json
     loadSetting();
