@@ -74,9 +74,16 @@ class Boss;
 class Boss1Fight : public BossFight
 {
 public:
+    static constexpr int STAGE_MAX_HP = 1500;
+
     Boss1Fight(std::unordered_map<std::string, SDL_Texture*>& textureManager, Boss* boss);
     ~Boss1Fight();
     void update(float deltaTime, BulletManager& manager, SDL_FPoint playerPos, SDL_FPoint bossPos) override;
+
+    bool hasBossStage() const override { return stage == Boss1Stage::Pattern1 || stage == Boss1Stage::Pattern2 || stage == Boss1Stage::Pattern3; }
+    int getStageCurrentHP() const override;
+    int getStageMaxHP() const override { return STAGE_MAX_HP; }
+    float getStageTimer() const override { return stageTimer; }
 
 private:
     void changeStage(Boss1Stage newStage);
@@ -125,6 +132,7 @@ private:
     Pattern3SubPhase p3SubPhase = Pattern3SubPhase::AttackWarmup;
     float p3SubTimer = 0.0f;
     int p3HealthAtStart = 0;
+
 };
 
 #endif

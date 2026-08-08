@@ -55,6 +55,7 @@ private:
     int percentY = 0;
     int percentW = 0;
     int percentH = 0;
+    
 };
 
 #endif

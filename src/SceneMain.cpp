@@ -76,7 +76,7 @@ void SceneMain::init()
     SDL_SetTextureBlendMode(playerPoint.texture, SDL_BLENDMODE_BLEND);
     SDL_SetTextureAlphaMod(playerPoint.texture, 0);//透明
     //子弹资源加载
-    BulletTextureManager["bullet1"] = IMG_LoadTexture(game.getRenderer(), "assets\\image\\bullet\\札弹\\札弹1.png");
+    BulletTextureManager["bullet1"] = IMG_LoadTexture(game.getRenderer(), "assets\\image\\bullet\\札弹\\Sprite-0001.png");
     BulletTextureManager["bullet2"] = IMG_LoadTexture(game.getRenderer(), "assets\\image\\bullet\\札弹\\札弹8.png");
     BulletTextureManager["EnemyBullet1"] = IMG_LoadTexture(game.getRenderer(), "assets\\image\\bullet\\粒弹\\粒弹210.png");
     BulletTextureManager["EnemyBullet2"] = IMG_LoadTexture(game.getRenderer(), "assets\\image\\bullet\\粒弹\\粒弹0.png");
@@ -437,6 +437,7 @@ void SceneMain::updatePlayer(float deltaTime)
     updatePlayerAnimation(deltaTime);
     //更新玩家判定点
     updatePlayerPoint(deltaTime);
+
     if(isDead)
     {
         return;
@@ -500,6 +501,7 @@ void SceneMain::updateEnemies(float deltaTime)
         {
             if(enemy->health <= 0)
             {
+                game.playSound(game.getSounds()["enep00"], -1);
                 enemyExplode(enemy);
                 it = Enemies.erase(it);
             }
@@ -514,8 +516,6 @@ void SceneMain::updateEnemies(float deltaTime)
 
 void SceneMain::updatePlayerBullet(float deltaTime)
 {
-
-
     for(auto it = PlayerBullets.begin(); it != PlayerBullets.end(); )
     {
         PlayerBullet* bullet = *it;
@@ -729,6 +729,9 @@ void SceneMain::updateEnemiesBullet(float deltaTime)
 
 void SceneMain::shootPlayer()
 {
+
+    game.playSound(game.getSounds()["plst"], -1);
+
     PlayerBullet* bullet2L = new PlayerBullet();
     PlayerBullet* bullet1L = new PlayerBullet();
     PlayerBullet* bullet1R = new PlayerBullet();
@@ -774,6 +777,7 @@ void SceneMain::shootPlayer()
 
 void SceneMain::shootEnemy(Enemy* enemy, SDL_FPoint offset)
 {
+    game.playSound(game.getSounds()["tan"], -1, 10);
     EnemyBullet* bullet = new EnemyBullet();
     if(enemy->currentEnemyType == EnemyType::enemyBase1)
     {
@@ -1152,12 +1156,59 @@ void SceneMain::renderEnemiesBullet()
 
 void SceneMain::renderUI()
 {
-    //渲染血条
+    if(boss != nullptr && bossFightController != nullptr && bossFightController->hasBossStage())
+    {
+        int stageHP = bossFightController->getStageCurrentHP();
+        int stageMaxHP = bossFightController->getStageMaxHP();
+
+        if(stageHP < 0) stageHP = 0;
+
+        const int barWidth = game.getPlayAreaWidth() - 40;
+        const int barHeight = 18;
+        const int barX = margin + 20;
+        const int barY = margin + 6;
+
+        SDL_Rect bgRect = {barX, barY, barWidth, barHeight};
+        SDL_SetRenderDrawColor(game.getRenderer(), 50, 50, 50, 200);
+        SDL_SetRenderDrawBlendMode(game.getRenderer(), SDL_BLENDMODE_BLEND);
+        SDL_RenderFillRect(game.getRenderer(), &bgRect);
+
+        float ratio = (float)stageHP / (float)stageMaxHP;
+        int fillWidth = (int)(barWidth * ratio);
+        SDL_Rect fillRect = {barX, barY, fillWidth, barHeight};
+        SDL_SetRenderDrawColor(game.getRenderer(), 255, 255, 255, 200);
+        SDL_RenderFillRect(game.getRenderer(), &fillRect);
+
+        SDL_SetRenderDrawColor(game.getRenderer(), 255, 255, 255, 200);
+        SDL_RenderDrawRect(game.getRenderer(), &bgRect);
+
+        SDL_SetRenderDrawBlendMode(game.getRenderer(), SDL_BLENDMODE_NONE);
+        SDL_SetRenderDrawColor(game.getRenderer(), 0, 0, 0, 255);
+
+        char timerText[16];
+        snprintf(timerText, sizeof(timerText), "%d", stageHP);
+        SDL_Color textColor = {255, 255, 255, 255};
+        SDL_Surface* textSurface = TTF_RenderUTF8_Solid(game.getTextFont(), timerText, textColor);
+        if(textSurface)
+        {
+            SDL_Texture* textTexture = SDL_CreateTextureFromSurface(game.getRenderer(), textSurface);
+            SDL_Rect textRect = {
+                barX + barWidth - textSurface->w - 6,
+                barY + (barHeight - textSurface->h) / 2,
+                textSurface->w,
+                textSurface->h
+            };
+            SDL_RenderCopy(game.getRenderer(), textTexture, nullptr, &textRect);
+            SDL_DestroyTexture(textTexture);
+            SDL_FreeSurface(textSurface);
+        }
+    }
+
     int x = margin + game.getPlayAreaWidth() + 10;
     int y = margin + 10;
     int size = 32;
     int offset = 40;
-    SDL_SetTextureColorMod(uiHealth, 100, 100, 100);//颜色变淡
+    SDL_SetTextureColorMod(uiHealth, 100, 100, 100);
     for(int i = 0; i < player.maxHealth; i++)
     {
         SDL_Rect rect = {x + i * offset, y, size, size};
@@ -1295,6 +1346,12 @@ void SceneMain::playerTakeDamage(int damage)
     {
         return;
     }
+
+    game.playSound(game.getSounds()["pldead"], -1);
+
+    //玩家复位
+    player.position.x = margin + (game.getPlayAreaWidth() / 2 - player.width / 2);
+    player.position.y = margin + game.getPlayAreaHeight() - player.height;
 
     player.currentHealth -= damage;
     invincible = true;

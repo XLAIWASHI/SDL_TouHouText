@@ -123,9 +123,10 @@ struct Player
     int width = 32;
     int height = 48;
     int BaseSpeed = 400;
-    Uint32 cooldown = 50;
+    Uint32 cooldown = 100;
     Uint32 lastShootTime = 0;
     int currentHealth = 10;
+    int lastHealth = 10;
     const int maxHealth = 10;
     int currentFrame = 0;
     int totalFrame = 0;

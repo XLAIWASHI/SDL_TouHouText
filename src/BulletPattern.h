@@ -1,6 +1,7 @@
 #ifndef BULLET_PATTERN_H
 #define BULLET_PATTERN_H
 
+#include "Game.h"
 #include "Object.h"
 #include <SDL.h>
 #include <list>
@@ -12,7 +13,7 @@ class BulletManager;
 class BulletPattern
 {
 public:
-    BulletPattern(std::unordered_map<std::string, SDL_Texture*>& textureManager) : bulletTextureManager(textureManager)
+    BulletPattern(std::unordered_map<std::string, SDL_Texture*>& textureManager) : bulletTextureManager(textureManager), game(Game::getInstance())
     {
     }
     void shootCircle(BulletManager& manager, SDL_FPoint position, int cnt, BulletType type); //全圆
@@ -24,6 +25,7 @@ public:
 private:
     void createBullet(BulletManager& manager, SDL_FPoint position, SDL_FPoint direction, BulletType type);
     std::unordered_map<std::string, SDL_Texture*>& bulletTextureManager;
+    Game& game;
 };
 
 

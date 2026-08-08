@@ -2,6 +2,7 @@
 #include "SceneTitle.h"
 #include "SceneMain.h"
 #include <nlohmann/json.hpp>
+#include <iostream>
 
 using json = nlohmann::json;
 
@@ -69,6 +70,16 @@ void Game::playBGM(const std::string &path)
         return;
     }
 
+}
+
+void Game::playSound(Mix_Chunk* sound, int channel, int volume)
+{
+    if(sound == nullptr)
+    {
+        return;
+    }
+    Mix_VolumeChunk(sound, volume);
+    Mix_PlayChannel(channel, sound, 0);
 }
 
 void Game::loadSetting()
@@ -179,11 +190,24 @@ void Game::init()
         isRunning = false;
     }
 
+    //加载音效
+    sounds["ok"] = Mix_LoadWAV("assets\\music\\sound\\se_ok00.wav");
+    sounds["cancel"] = Mix_LoadWAV("assets\\music\\sound\\se_cancel00.wav");
+    sounds["select"] = Mix_LoadWAV("assets\\music\\sound\\se_select00.wav");
+    sounds["plst"] = Mix_LoadWAV("assets\\music\\sound\\se_plst00.wav");
+    sounds["tan"] = Mix_LoadWAV("assets\\music\\sound\\se_tan00.wav");
+    sounds["pldead"] = Mix_LoadWAV("assets\\music\\sound\\se_pldead00.wav");
+    sounds["enep00"] = Mix_LoadWAV("assets\\music\\sound\\se_enep00.wav");
+    sounds["enep01"] = Mix_LoadWAV("assets\\music\\sound\\se_enep01.wav");
+
     //载入setting.json
     loadSetting();
 
     currentScene = new SceneTitle;
     currentScene->init();
+
+    //设置音效channel数量
+    Mix_AllocateChannels(64);
 }
 
 void Game::run()
@@ -242,6 +266,16 @@ void Game::clean()
         Mix_FreeMusic(bgm);
         bgm = nullptr;
     }
+
+    //清理音效
+    for(auto sound : sounds)
+    {
+        if(sound.second != nullptr)
+        {
+            Mix_FreeChunk(sound.second);
+        }
+    }
+    sounds.clear();
 
     //清理SDL_mixer
     Mix_CloseAudio();

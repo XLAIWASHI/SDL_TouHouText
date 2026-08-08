@@ -19,6 +19,11 @@ textureManager(textureManager)
     void createFight(BossType type, Boss *boss);
     void update(float deltaTime, BulletManager &manager, SDL_FPoint playerPos);
 
+    bool hasBossStage() const;
+    int getStageCurrentHP() const;
+    int getStageMaxHP() const;
+    float getStageTimer() const;
+
 private:
     SDL_FPoint playerPos = {0.0f, 0.0f};
     Boss* boss = nullptr;
