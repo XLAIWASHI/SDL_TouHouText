@@ -2,8 +2,10 @@
 #include "BulletManager.h"
 #include "BulletSkill.h"
 #include "Boss.h"
+#include "EffectManager.h"
 
-Boss1Fight::Boss1Fight(std::unordered_map<std::string, SDL_Texture*>& textureManager, Boss* boss)
+Boss1Fight::Boss1Fight(std::unordered_map<std::string, SDL_Texture*>& textureManager, EffectManager& effectManager, Boss* boss)
+: effectManager(effectManager)
 {
     bulletSkill = new BulletSkill(textureManager);
     rotateFanState.centerAngle = 90.0f;
@@ -472,6 +474,7 @@ void Boss1Fight::updatePattern3(float deltaTime, BulletManager &manager, SDL_FPo
 
     case Pattern3SubPhase::Done:
         game.playSound(game.getSounds()["enep01"], -1);
+        effectManager.addEffect(bossPos, EffectType::enemyDead);
         boss->setDead();
         changeStage(Boss1Stage::Dead);
         break;

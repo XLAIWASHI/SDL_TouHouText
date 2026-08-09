@@ -70,13 +70,14 @@ enum class Pattern3SubPhase
 class BulletSkill;
 class BulletManager;
 class Boss;
+class EffectManager;
 
 class Boss1Fight : public BossFight
 {
 public:
     static constexpr int STAGE_MAX_HP = 1500;
 
-    Boss1Fight(std::unordered_map<std::string, SDL_Texture*>& textureManager, Boss* boss);
+    Boss1Fight(std::unordered_map<std::string, SDL_Texture*>& textureManager, EffectManager& effectManager, Boss* boss);
     ~Boss1Fight();
     void update(float deltaTime, BulletManager& manager, SDL_FPoint playerPos, SDL_FPoint bossPos) override;
 
@@ -109,6 +110,8 @@ private:
     void exitDead();
 
 private:
+    EffectManager& effectManager;
+
     BulletSkill* bulletSkill;
     float stageTimer = 0.0f;
     SpiralState spiralState;

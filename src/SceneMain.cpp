@@ -5,6 +5,8 @@
 #include "BulletPattern.h"
 #include "BulletManager.h"
 #include "BossFightController.h"
+#include "EffectManager.h"
+#include "EffectType.h"
 #include <nlohmann/json.hpp>
 
 
@@ -83,7 +85,11 @@ void SceneMain::init()
     BulletTextureManager["EnemyBullet3"] = IMG_LoadTexture(game.getRenderer(), "assets\\image\\bullet\\粒弹\\粒弹30.png");
     BulletTextureManager["EnemyBullet4"] = IMG_LoadTexture(game.getRenderer(), "assets\\image\\bullet\\粒弹\\粒弹300.png");
     
+    //子弹管理
     bulletManager = new BulletManager(margin, game.getPlayAreaWidth(), game.getPlayAreaHeight());
+
+    //特效管理
+    effectManager = new EffectManager(margin);
 
     for(auto& bullet : BulletTextureManager)
     {
@@ -173,6 +179,8 @@ void SceneMain::update(float deltaTime)
     }
     //生成敌人
     updateWave(deltaTime);
+    //更新特效
+    effectManager->update(deltaTime);
     
 }
 
@@ -195,6 +203,8 @@ void SceneMain::render()
     //渲染敌人子弹
     renderEnemiesBullet();
     bulletManager->render(game.getRenderer());
+    //渲染特效
+    effectManager->render();
     //渲染UI
     renderUI();
 }
@@ -284,7 +294,7 @@ void SceneMain::renderBackground()
 
 void SceneMain::keyboardControl(float deltaTime)
 {
-    if(isDead)
+    if(isDead || isDeadInterval)
     {
         return;
     }
@@ -442,6 +452,22 @@ void SceneMain::updatePlayer(float deltaTime)
     {
         return;
     }
+    if(isDeadInterval)
+    {
+        deadIntervalTime += deltaTime;
+        if(deadIntervalTime >= 0.7f)
+        {
+            deadIntervalTime = 0.0f;
+            isDeadInterval = false;
+
+            //玩家复位
+            player.position.x = margin + (game.getPlayAreaWidth() / 2 - player.width / 2);
+            player.position.y = margin + game.getPlayAreaHeight() - player.height;
+
+            invincible = true;
+            invincibleTimer = 0.0f;
+        }
+    }
     if(invincible)
     {
         invincibleTimer += deltaTime;
@@ -501,7 +527,6 @@ void SceneMain::updateEnemies(float deltaTime)
         {
             if(enemy->health <= 0)
             {
-                game.playSound(game.getSounds()["enep00"], -1);
                 enemyExplode(enemy);
                 it = Enemies.erase(it);
             }
@@ -510,8 +535,7 @@ void SceneMain::updateEnemies(float deltaTime)
                 it++;
             }
         }
-    }
-    
+    }   
 }
 
 void SceneMain::updatePlayerBullet(float deltaTime)
@@ -960,7 +984,7 @@ void SceneMain::updateWave(float deltaTime) {
         else if(cmd.spawnType == SpawnType::Boss)
         {
             spawnBoss(cmd.bossType, realX, realY);
-            bossFightController = new BossFightController(BulletTextureManager);
+            bossFightController = new BossFightController(BulletTextureManager, *effectManager);
             bossFightController->createFight(boss->getBossType(), boss);
         }
         nextSpawnIdx++;
@@ -1113,6 +1137,10 @@ void SceneMain::renderPlayerBullet()
 
 void SceneMain::renderPlayer()
 {
+    if(isDeadInterval)
+    {
+        return;
+    }
     //渲染玩家动画
     renderPlayerAnimation();
     //渲染玩家判定点
@@ -1247,7 +1275,7 @@ bool SceneMain::ColliderEnemies(Enemy *enemy)
         if(SDL_HasIntersection(&playerPointRect, &enemyRect))
         {
             player.currentHealth -= 1;
-            delete enemy;
+            enemyExplode(enemy);
             return true;
         }
     }
@@ -1337,24 +1365,38 @@ void SceneMain::ColliderBoss()
 
 void SceneMain::enemyExplode(Enemy *enemy)
 {
+    //播放音效
+    game.playSound(game.getSounds()["enep00"], -1);
+
+    SDL_FPoint position = {
+        static_cast<int>(enemy->position.x) + static_cast<int>(enemy->width / 2),
+        static_cast<int>(enemy->position.y) + static_cast<int>(enemy->height / 2),
+    };
+    effectManager->addEffect(position, EffectType::enemyDead);
+
     delete enemy;
 }
 
 void SceneMain::playerTakeDamage(int damage)
 {
-    if(invincible)
+    if(invincible || isDeadInterval)
     {
         return;
     }
 
     game.playSound(game.getSounds()["pldead"], -1);
 
-    //玩家复位
-    player.position.x = margin + (game.getPlayAreaWidth() / 2 - player.width / 2);
-    player.position.y = margin + game.getPlayAreaHeight() - player.height;
-
+    
+    //播放特效
+    SDL_FPoint position = {
+        static_cast<int>(player.position.x) + static_cast<int>(player.width / 2),
+        static_cast<int>(player.position.y) + static_cast<int>(player.height / 2),
+    };
+    effectManager->addEffect(position, EffectType::playerDead);
+    
+    //受伤间隔
     player.currentHealth -= damage;
-    invincible = true;
-    invincibleTimer = 0.0f;
+    isDeadInterval = true;
+    deadIntervalTime = 0.0f;
     
 }

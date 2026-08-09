@@ -21,7 +21,7 @@ void BossFightController::createFight(BossType type, Boss *boss)
     switch(type)
     {
         case BossType::boss1:
-            currentBossFight = new Boss1Fight(textureManager, boss);
+            currentBossFight = new Boss1Fight(textureManager, effectManager, boss);
             break;
     }
 }
