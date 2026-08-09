@@ -1,0 +1,10 @@
+{
+    "effect": [
+        {"type": "enemyDead", "src": {"x": 192, "y": 176, "w": 64, "h": 64}, "_comment": "敌人死亡特效"},
+        {"type": "playerDead", "src":{"x": 128, "y": 112, "w": 64, "h": 64}, "_comment": "玩家死亡特效"}
+    ],
+
+    "scaleSetting": {"maxScale": 2.0, "scaleSpeed": 2.0, "lifeTime": 0.3}
+    
+    
+}

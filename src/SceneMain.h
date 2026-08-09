@@ -16,6 +16,7 @@ class BulletPattern;
 class BulletManager;
 class BossFightController;
 class Boss1Fight;
+class EffectManager;
 
 class SceneMain : public Scene
 {
@@ -91,6 +92,8 @@ private:
     bool isDead = false;//玩家是否死亡
     bool invincible = false;//玩家是否无敌
     float invincibleTimer = 0.0f;
+    bool isDeadInterval = false;//死亡间隔是否开始
+    float deadIntervalTime = 0.0f;
     Enemy enemyTemplate;
 
     //容器相关
@@ -113,6 +116,9 @@ private:
     BulletManager* bulletManager = nullptr;
     
     BossFightController* bossFightController = nullptr;
+
+    //特效相关
+    EffectManager* effectManager = nullptr;
 
     //波次表
     struct SpawnCmd
