@@ -93,6 +93,16 @@ enum class OptionButtonType
     COUNT
 };
 
+enum class UiItemType
+{
+    hiScore,
+    score,
+    player,
+    spell,
+    health,
+    bomb
+};
+
 struct Settings
 {
     int vol = 100;
@@ -116,6 +126,14 @@ struct TitleItem
     SDL_Rect dst;
 };
 
+struct UiItem
+{
+    UiItemType type;
+    SDL_Rect src;
+    SDL_Rect dst;
+    std::vector<UiItem> variants;
+};
+
 struct Player
 {
     SDL_Texture* texture = nullptr;
@@ -125,10 +143,14 @@ struct Player
     int BaseSpeed = 400;
     Uint32 cooldown = 100;
     Uint32 lastShootTime = 0;
-    int currentHealth = 10;
-    int lastHealth = 10;
-    const int maxHealth = 10;
+    int currentHealth = 5;
+    int lastHealth = 5;
+    const int maxHealth = 5;
     int currentFrame = 0;
+    const int maxBomb = 3;
+    int currentBomb = 3;
+    Uint32 bombCooldown = 500;
+    Uint32 lastBombTime = 0;
     int totalFrame = 0;
     Uint32 starTime = 0;
     Uint32 FPS = 15;

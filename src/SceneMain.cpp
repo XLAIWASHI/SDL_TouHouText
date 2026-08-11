@@ -7,8 +7,9 @@
 #include "BossFightController.h"
 #include "EffectManager.h"
 #include "EffectType.h"
+#include "Utils.h"
+#include "Bomb.h"
 #include <nlohmann/json.hpp>
-
 
 using json = nlohmann::json;
 
@@ -25,6 +26,17 @@ void SceneMain::init()
     game.playBGM("assets\\music\\bgm\\th08_09.mid");
     //导入波次表
     loadWavesFromFile("data\\waves.json");
+    //导入ui配置表
+    loadUIFile("data\\ui.json");
+    //ui纹理
+    ui_playerTexture = IMG_LoadTexture(game.getRenderer(), "assets\\image\\UI\\front.png");
+    if(ui_playerTexture == nullptr)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "ui init Error: %s\n", SDL_GetError());
+        game.getIsRunning() = false;
+        return;
+    }
+    ui_ascii = IMG_LoadTexture(game.getRenderer(), "assets\\image\\UI\\ascii.png");
     //随机数
     std::random_device rd;
     gen = std::mt19937(rd());
@@ -74,6 +86,14 @@ void SceneMain::init()
     SDL_QueryTexture(playerPoint.texture, nullptr, nullptr, &playerPoint.w, &playerPoint.h); 
     playerPoint.w /= 4;
     playerPoint.h /= 4;
+    //Bomb
+    bombTexture = IMG_LoadTexture(game.getRenderer(), "assets\\image\\effect\\etama4.png");
+    if(bombTexture == nullptr)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "bombTexture init Error: %s\n", SDL_GetError());
+        game.getIsRunning() = false;
+        return;
+    }
     //开启混合模式并设置判定点透明度
     SDL_SetTextureBlendMode(playerPoint.texture, SDL_BLENDMODE_BLEND);
     SDL_SetTextureAlphaMod(playerPoint.texture, 0);//透明
@@ -119,14 +139,6 @@ void SceneMain::init()
         game.getIsRunning() = false;
         return;
     }
-    //UI相关
-    uiHealth = IMG_LoadTexture(game.getRenderer(), "assets\\image\\UI\\Health UI Black.png");
-    if(uiHealth == nullptr)
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "UI init Error: %s\n", SDL_GetError());
-        game.getIsRunning() = false;
-        return;
-    }
 }
 
 void SceneMain::handleEvent(SDL_Event *event)
@@ -153,6 +165,10 @@ void SceneMain::update(float deltaTime)
     updateEnemies(deltaTime);
     //更新玩家子弹
     updatePlayerBullet(deltaTime);
+    if(isBomb)
+    {
+        updateBomb(deltaTime);
+    }
     //更新敌人子弹
     updateEnemiesBullet(deltaTime);
     bulletManager->update(deltaTime);
@@ -205,12 +221,21 @@ void SceneMain::render()
     bulletManager->render(game.getRenderer());
     //渲染特效
     effectManager->render();
+    if(isBomb)
+    {
+        renderBomb();
+    }
     //渲染UI
     renderUI();
 }
 
 void SceneMain::clean()
 {
+    //清理分数字体
+    if(scoreFont != nullptr)
+    {
+        TTF_CloseFont(scoreFont);
+    }
     //背景
     if(background.texture != nullptr)
     {
@@ -220,11 +245,6 @@ void SceneMain::clean()
     if(playarea.texture != nullptr)
     {
         SDL_DestroyTexture(playarea.texture);
-    }
-    //UI相关
-    if(uiHealth != nullptr)
-    {
-        SDL_DestroyTexture(uiHealth);
     }
     //玩家
     if(player.texture != nullptr)
@@ -398,6 +418,17 @@ void SceneMain::keyboardControl(float deltaTime)
             player.lastShootTime = currentTime;
         }
     }
+    if(keyboardState[SDL_SCANCODE_I])
+    {
+        if(player.currentBomb > 0 &&
+            !isBomb &&
+            currentTime - player.lastBombTime > player.bombCooldown)
+        {
+            shootBomb();
+            player.lastBombTime = currentTime;
+            player.currentBomb -= 1;
+        }
+    }
 }
 
 void SceneMain::updatePlayArea(float deltaTime)
@@ -463,6 +494,7 @@ void SceneMain::updatePlayer(float deltaTime)
             //玩家复位
             player.position.x = margin + (game.getPlayAreaWidth() / 2 - player.width / 2);
             player.position.y = margin + game.getPlayAreaHeight() - player.height;
+            player.currentBomb = player.maxBomb;
 
             invincible = true;
             invincibleTimer = 0.0f;
@@ -730,10 +762,10 @@ void SceneMain::updateEnemiesBullet(float deltaTime)
                     playerPoint.h
                 };
                 SDL_Rect bulletRect = {
-                    static_cast<int>(bullet->position.x),
-                    static_cast<int>(bullet->position.y),
-                    bullet->width,
-                    bullet->height
+                    static_cast<int>(bullet->position.x + bullet->width * 0.25f),
+                    static_cast<int>(bullet->position.y + bullet->height * 0.25f),
+                    static_cast<int>(bullet->width * 0.5f),
+                    static_cast<int>(bullet->height * 0.5f)
                 };
                 if(SDL_HasIntersection(&playerPointRect, &bulletRect))
                 {
@@ -797,6 +829,17 @@ void SceneMain::shootPlayer()
     PlayerBullets.push_back(bullet1L);
     PlayerBullets.push_back(bullet1R);
     PlayerBullets.push_back(bullet2R);
+}
+
+void SceneMain::shootBomb()
+{
+    if(isBomb || bomb != nullptr)
+    {
+        return;
+    }
+    game.playSound(game.getSounds()["gun"], -1);
+    isBomb = true;
+    bomb = new Bomb(player.position);
 }
 
 void SceneMain::shootEnemy(Enemy* enemy, SDL_FPoint offset)
@@ -965,6 +1008,81 @@ void SceneMain::loadWavesFromFile(const std::string &filename)
     nextSpawnIdx = 0;
 }
 
+void SceneMain::addScore(int value)
+{
+    score += value;
+}
+
+void SceneMain::loadUIFile(const std::string& filename)
+{
+    std::ifstream file(filename);
+    if(!file.is_open())
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Open UIFile Error: %s\n", SDL_GetError());
+        game.getIsRunning() = false;
+        return;
+    }
+
+    json data;
+    file >> data;
+
+    //数据
+    ui_offset_startX = data["digits"]["offset_startX"].get<int>();
+    ui_offset_startY = data["digits"]["offset_startY"].get<int>();
+    offset = data["digits"]["offset"].get<int>();
+    ui_mult = data["digits"]["mult"].get<float>();
+    scoreStartX = data["score"]["startX"].get<int>();
+    scoreStartY = data["score"]["startY"].get<int>();
+    scoreWidth = data["score"]["width"].get<int>();
+    scoreHeight = data["score"]["width"].get<int>();
+
+    uiItems.clear();
+    
+    int index = 0;
+    for(auto& item : data["uiItem"])
+    {
+        UiItem uiIt;
+        std::string typeStr = item["type"].get<std::string>();
+        uiIt.type = strToUi(typeStr);
+        uiIt.src = {
+            item["src"]["x"].get<int>(),
+            item["src"]["y"].get<int>(),
+            item["src"]["w"].get<int>(),
+            item["src"]["h"].get<int>()
+        };
+        uiIt.dst = {
+            margin + game.getPlayAreaWidth() + ui_offset_startX,
+            margin + ui_offset_startY + static_cast<int>(offset * index * ui_mult),
+            static_cast<int>(uiIt.src.w * ui_mult),
+            static_cast<int>(uiIt.src.h * ui_mult)
+        };
+        if(item.contains("variants"))
+        {
+            for(auto& v : item["variants"])
+            {
+                UiItem variant;
+                std::string vTypeStr = v["type"].get<std::string>();
+                variant.type = strToUi(vTypeStr);
+                variant.src = {
+                    v["src"]["x"].get<int>(),
+                    v["src"]["y"].get<int>(),
+                    v["src"]["w"].get<int>(),
+                    v["src"]["h"].get<int>()
+                };
+                variant.dst = {
+                    static_cast<int>(uiIt.dst.x + uiIt.dst.w + offset),
+                    static_cast<int>(uiIt.dst.y),
+                    static_cast<int>(variant.src.w * ui_mult),
+                    static_cast<int>(variant.src.h * ui_mult)
+                };
+                uiIt.variants.push_back(variant);
+            }
+        }
+        index++;
+        uiItems.push_back(uiIt);
+    }
+}
+
 void SceneMain::updateWave(float deltaTime) {
     if (curWave >= waves.size()) return;   // 所有波次结束
 
@@ -1012,6 +1130,39 @@ void SceneMain::updateWave(float deltaTime) {
         curWave++;
         waveTimer = 0.0f;
         nextSpawnIdx = 0;
+    }
+}
+
+void SceneMain::updateBomb(float deltaTime)
+{
+    if(bomb == nullptr) return;
+
+    bomb->timer += deltaTime;
+    bomb->scale += bomb->scaleSpeed * deltaTime;
+
+    if(bomb->scale >= bomb->maxScale)
+    {
+        bomb->scale = bomb->maxScale;
+    }
+
+    //更新大小
+    bomb->width = bomb->baseWidth * bomb->scale;
+    bomb->height = bomb->baseHeight * bomb->scale;
+
+    //跟随玩家中心
+    bomb->position.x = player.position.x + player.width / 2 - bomb->width / 2;
+    bomb->position.y = player.position.y + player.height / 2 - bomb->height / 2;
+
+    //碰撞检测
+    ColliderBomb();
+
+    
+
+    if(bomb->timer >= bomb->lifeTime)
+    {
+        isBomb = false;
+        delete bomb;
+        bomb = nullptr;
     }
 }
 
@@ -1184,6 +1335,14 @@ void SceneMain::renderEnemiesBullet()
 
 void SceneMain::renderUI()
 {
+    renderBossUI();
+
+    renderPlayerUI();
+
+}
+
+void SceneMain::renderBossUI()
+{
     if(boss != nullptr && bossFightController != nullptr && bossFightController->hasBossStage())
     {
         int stageHP = bossFightController->getStageCurrentHP();
@@ -1231,23 +1390,109 @@ void SceneMain::renderUI()
             SDL_FreeSurface(textSurface);
         }
     }
+}
 
-    int x = margin + game.getPlayAreaWidth() + 10;
-    int y = margin + 10;
-    int size = 32;
-    int offset = 40;
-    SDL_SetTextureColorMod(uiHealth, 100, 100, 100);
-    for(int i = 0; i < player.maxHealth; i++)
+void SceneMain::renderPlayerUI()
+{
+    if(uiItems.empty())
     {
-        SDL_Rect rect = {x + i * offset, y, size, size};
-        SDL_RenderCopy(game.getRenderer(), uiHealth, nullptr, &rect);
+        return;
     }
-    SDL_SetTextureColorMod(uiHealth, 255, 255, 255);
-    for(int i = 0; i < player.currentHealth; i++)
+
+    for(int i = 0; i < uiItems.size(); i++)
     {
-        SDL_Rect rect = {x + i * offset, y, size, size};
-        SDL_RenderCopy(game.getRenderer(), uiHealth, nullptr, &rect);
+        //血量和bomb
+        if(!uiItems[i].variants.empty())
+        {
+            if(uiItems[i].variants[0].type == UiItemType::health)
+            {
+                int x = uiItems[i].variants[0].dst.x;
+                int y = uiItems[i].variants[0].dst.y;
+                int size = uiItems[i].variants[0].dst.w;
+                SDL_SetTextureColorMod(ui_playerTexture, 100, 100, 100);
+                for(int j = 0; j < player.maxHealth; j++)
+                {
+                    SDL_Rect rect = {x + static_cast<int>(j * offset * ui_mult), y, size, size};
+                    SDL_RenderCopy(game.getRenderer(), ui_playerTexture, &uiItems[i].variants[0].src, &rect);
+                }
+                SDL_SetTextureColorMod(ui_playerTexture, 255, 255, 255);
+                for(int j = 0; j < player.currentHealth; j++)
+                {
+                    SDL_Rect rect = {x + static_cast<int>(j * offset * ui_mult), y, size, size};
+                    SDL_RenderCopy(game.getRenderer(), ui_playerTexture, &uiItems[i].variants[0].src, &rect);
+                }
+            }
+            else if(uiItems[i].variants[0].type == UiItemType::bomb)
+            {
+                int x = uiItems[i].variants[0].dst.x;
+                int y = uiItems[i].variants[0].dst.y;
+                int size = uiItems[i].variants[0].dst.w;
+                SDL_SetTextureColorMod(ui_playerTexture, 100, 100, 100);
+                for(int j = 0; j < player.maxBomb; j++)
+                {
+                    SDL_Rect rect = {x + static_cast<int>(j * offset * ui_mult), y, size, size};
+                    SDL_RenderCopy(game.getRenderer(), ui_playerTexture, &uiItems[i].variants[0].src, &rect);
+                }
+                SDL_SetTextureColorMod(ui_playerTexture, 255, 255, 255);
+                for(int j = 0; j < player.currentBomb; j++)
+                {
+                    SDL_Rect rect = {x + static_cast<int>(j * offset * ui_mult), y, size, size};
+                    SDL_RenderCopy(game.getRenderer(), ui_playerTexture, &uiItems[i].variants[0].src, &rect);
+                }
+            }
+        }
+        //渲染得分
+        if(uiItems[i].type == UiItemType::score)
+        {
+            renderScore(score, uiItems[i].dst.x + uiItems[i].dst.w, uiItems[i].dst.y);
+        }
+        else if(uiItems[i].type == UiItemType::hiScore)
+        {
+            //todo
+        }
+        SDL_RenderCopy(game.getRenderer(), ui_playerTexture, &uiItems[i].src, &uiItems[i].dst);
     }
+}
+
+void SceneMain::renderScore(int value, int x, int y)
+{
+    std::string numStr = std::to_string(value);
+    
+    for(char c : numStr)
+    {
+        int digit = c - '0';
+        renderDigit(digit, x, y);
+        x += static_cast<int>(scoreWidth * ui_mult);
+    }
+}
+
+void SceneMain::renderDigit(int digit, int x, int y)
+{
+    if(digit < 0 || digit > 9) return;
+    SDL_Rect src = {
+        scoreStartX + scoreWidth * digit,
+        scoreStartY,
+        scoreWidth,
+        scoreHeight
+    };
+    SDL_Rect dst = {x, y, static_cast<int>(scoreWidth * ui_mult), static_cast<int>(scoreHeight * ui_mult)};
+    SDL_RenderCopy(game.getRenderer(), ui_ascii, &src, &dst);
+}
+
+void SceneMain::renderBomb()
+{
+    SDL_Rect clip = {margin, margin, game.getPlayAreaWidth(), game.getPlayAreaHeight()};
+    SDL_RenderSetClipRect(game.getRenderer(), &clip);
+
+    SDL_Rect rect = {
+        static_cast<int>(bomb->position.x),
+        static_cast<int>(bomb->position.y),
+        bomb->width,
+        bomb->height
+    };
+
+    SDL_RenderCopy(game.getRenderer(), bombTexture, nullptr, &rect);
+    SDL_RenderSetClipRect(game.getRenderer(), nullptr);
 }
 
 bool SceneMain::ColliderEnemies(Enemy *enemy)
@@ -1320,10 +1565,10 @@ void SceneMain::ColliderBossBullet()
                 playerPoint.h
             };
             SDL_Rect bulletRect = {
-                static_cast<int>(bullet->position.x),
-                static_cast<int>(bullet->position.y),
-                bullet->width,
-                bullet->height
+                static_cast<int>(bullet->position.x + bullet->width * 0.25f),
+                static_cast<int>(bullet->position.y + bullet->height * 0.25f),
+                static_cast<int>(bullet->width * 0.5f),
+                static_cast<int>(bullet->height * 0.5f)
             };
             if(SDL_HasIntersection(&playerPointRect, &bulletRect))
             {
@@ -1363,6 +1608,87 @@ void SceneMain::ColliderBoss()
     }
 }
 
+void SceneMain::ColliderBomb()
+{
+    SDL_Rect rect = {
+        static_cast<int>(bomb->position.x),
+        static_cast<int>(bomb->position.y),
+        bomb->width,
+        bomb->height
+    };
+    //敌人子弹
+    for(auto it = EnemiesBullets.begin(); it != EnemiesBullets.end(); )
+    {
+        EnemyBullet* bullet = *it;
+        SDL_Rect ebRect = {
+            static_cast<int>(bullet->position.x + bullet->width * 0.25f),
+            static_cast<int>(bullet->position.y + bullet->height * 0.25f),
+            static_cast<int>(bullet->width * 0.5f),
+            static_cast<int>(bullet->height * 0.5f)
+        };
+        if(SDL_HasIntersection(&rect, &ebRect))
+        {
+            delete bullet;
+            it = EnemiesBullets.erase(it);
+        }
+        else
+        {
+            it++;
+        }
+    }
+    //敌人
+    for(Enemy* enemy : Enemies)
+    {
+        SDL_Rect ebRect = {
+            static_cast<int>(enemy->position.x),
+            static_cast<int>(enemy->position.y),
+            enemy->width,
+            enemy->height
+        };
+        if(SDL_HasIntersection(&rect, &ebRect))
+        {
+            enemy->health -= 10;
+        }
+    }
+    //Boss子弹
+    if(BossBullets != nullptr)
+    {
+        for(auto it = BossBullets->begin(); it != BossBullets->end(); )
+        {
+            EnemyBullet* bullet = *it;
+            SDL_Rect ebRect = {
+                static_cast<int>(bullet->position.x + bullet->width * 0.25f),
+                static_cast<int>(bullet->position.y + bullet->height * 0.25f),
+                static_cast<int>(bullet->width * 0.5f),
+                static_cast<int>(bullet->height * 0.5f)
+            };
+            if(SDL_HasIntersection(&rect, &ebRect))
+            {
+                delete bullet;
+                it = BossBullets->erase(it);
+            }
+            else
+            {
+                it++;
+            }
+        }
+    }
+    //Boss
+    if(boss != nullptr && !bomb->bombHitBoss)
+    {
+        SDL_Rect bossRect = {
+            static_cast<int>(boss->getBossPos().x),
+            static_cast<int>(boss->getBossPos().y),
+            boss->getBossWidth(),
+            boss->getBossHeight()
+        };
+        if(SDL_HasIntersection(&rect, &bossRect))
+        {
+            boss->takeDamage(150);
+            bomb->bombHitBoss = true;
+        }
+    }
+}
 void SceneMain::enemyExplode(Enemy *enemy)
 {
     //播放音效
@@ -1373,6 +1699,9 @@ void SceneMain::enemyExplode(Enemy *enemy)
         static_cast<int>(enemy->position.y) + static_cast<int>(enemy->height / 2),
     };
     effectManager->addEffect(position, EffectType::enemyDead);
+
+    //得分
+    addScore(5);
 
     delete enemy;
 }

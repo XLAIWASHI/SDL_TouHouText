@@ -17,6 +17,7 @@ class BulletManager;
 class BossFightController;
 class Boss1Fight;
 class EffectManager;
+class Bomb;
 
 class SceneMain : public Scene
 {
@@ -42,6 +43,7 @@ private:
     void updateEnemiesAnimation(float deltaTime, Enemy* enemy);
     void updateEnemiesBullet(float deltaTime);
     void updateWave(float deltaTime);//更新波次表
+    void updateBomb(float deltaTime);
 
     //渲染相关
     void renderBackground();
@@ -54,11 +56,17 @@ private:
     void renderEnemiesAnimation();
     void renderEnemiesBullet();
     void renderUI();
+    void renderBossUI();
+    void renderPlayerUI();
+    void renderScore(int value, int x, int y);
+    void renderDigit(int digit, int x, int y);
+    void renderBomb();
 
     //碰撞检测
     bool ColliderEnemies(Enemy* enemy);
     void ColliderBossBullet();
     void ColliderBoss();
+    void ColliderBomb();
     void enemyExplode(Enemy* enemy);
 
     //玩家减血
@@ -66,6 +74,7 @@ private:
 
     //发射子弹
     void shootPlayer();
+    void shootBomb();
     void shootEnemy(Enemy* enemy, SDL_FPoint offset);
     
     //生成敌人
@@ -81,6 +90,30 @@ private:
     //波次相关
     void loadWavesFromFile(const std::string& filename);
     
+    //得分相关
+    void addScore(int value);
+    void loadUIFile(const std::string& filename);
+
+    //分数相关
+    int score = 0;
+    std::vector<UiItem> uiItems;
+    TTF_Font* scoreFont = nullptr;
+    int ui_offset_startX = 0;
+    int ui_offset_startY = 0;
+    float ui_mult = 0.0f;
+    int offset = 0;
+    SDL_Texture* ui_playerTexture = nullptr;
+    SDL_Texture* ui_ascii = nullptr;
+    int scoreStartX = 0;
+    int scoreStartY = 0;
+    int scoreWidth = 0;
+    int scoreHeight = 0;
+
+    //Bomb
+    SDL_Texture* bombTexture = nullptr;
+    bool isBomb = false;
+    Bomb* bomb = nullptr;
+
 
     int margin = 32;
 
@@ -102,14 +135,11 @@ private:
     std::list<PlayerBullet*> PlayerBullets;//玩家子弹库
     std::list<Enemy*> Enemies;//敌人库
     std::list<EnemyBullet*> EnemiesBullets;//敌人子弹库
-    std::list<EnemyBullet*>* BossBullets;
+    std::list<EnemyBullet*>* BossBullets = nullptr;
 
     //随机数相关
     std::mt19937 gen;
     std::uniform_real_distribution<float> dis;
-
-    //UI相关
-    SDL_Texture* uiHealth = nullptr;
 
     //Boss相关
     Boss* boss = nullptr;

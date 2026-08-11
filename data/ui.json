@@ -1,0 +1,35 @@
+{
+    "uiItem": [
+        {"type": "hiScore", "src": {"x": 0, "y": 80, "w": 64, "h": 16}, "_comment": "历史最高得分"},
+        {"type": "score", "src": {"x": 0, "y": 96, "w": 48, "h": 16}, "_comment": "当前得分"},
+        {
+            "type": "player",
+            "src": {"x": 0, "y": 112, "w": 48, "h": 16},
+            "variants": [
+                {"type": "health", "src": {"x": 64, "y": 80, "w": 16, "h": 16}}
+            ],
+            "_comment": "玩家血量"
+        },
+        {
+            "type": "spell",
+            "src": {"x": 0, "y": 128, "w": 48, "h": 16},
+            "variants": [
+                {"type": "bomb", "src": {"x": 80, "y": 80, "w": 16, "h": 16}}
+            ],
+            "_comment": "Bomb个数"
+        }
+    ],
+    "score": {
+        "startX": 0,
+        "startY": 48,
+        "width": 16,
+        "height": 16,
+        "_comment": "0-9的数字"
+    },
+    "digits": {
+        "offset_startX": 10,
+        "offset_startY": 10,
+        "offset": 30,
+        "mult": 2.5
+    }
+}

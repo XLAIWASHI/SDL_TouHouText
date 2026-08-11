@@ -6,5 +6,6 @@
 
 OptionButtonType strToOption(std::string str);
 TitleButtonType strToTitle(std::string str);
+UiItemType strToUi(std::string str);
 
 #endif

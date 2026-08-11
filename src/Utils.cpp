@@ -14,3 +14,13 @@ TitleButtonType strToTitle(std::string str)
     if(str == "option") return TitleButtonType::option;
     if(str == "quit") return TitleButtonType::quit;
 }
+
+UiItemType strToUi(std::string str)
+{
+    if(str == "hiScore") return UiItemType::hiScore;
+    if(str == "score") return UiItemType::score;
+    if(str == "player") return UiItemType::player;
+    if(str == "spell") return UiItemType::spell;
+    if(str == "health") return UiItemType::health;
+    if(str == "bomb") return UiItemType::bomb; 
+}

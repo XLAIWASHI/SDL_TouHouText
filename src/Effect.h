@@ -24,7 +24,7 @@ public:
     float scale = 1.0f;
     
 private:
-    SDL_Texture* texture = nullptr;
+    //SDL_Texture* texture = nullptr;
     SDL_FPoint position = {0.0f, 0.0f};
     SDL_Rect src = {};
     SDL_Rect dst = {};

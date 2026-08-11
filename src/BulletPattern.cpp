@@ -85,8 +85,8 @@ void BulletPattern::createBullet(BulletManager &manager, SDL_FPoint position, SD
     bullet->texture = bulletTextureManager[key];
     bullet->type = type;
     SDL_QueryTexture(bullet->texture, nullptr, nullptr, &bullet->width, &bullet->height);
-    bullet->width *= 1.5;
-    bullet->height *= 1.5;
+    bullet->width *= 2;
+    bullet->height *= 2;
     bullet->position.x = position.x - bullet->width / 2;
     bullet->position.y = position.y - bullet->height / 2;
     manager.addBullet(bullet);
