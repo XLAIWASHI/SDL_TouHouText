@@ -47,6 +47,12 @@ public:
     void playBGM(const std::string& path);
     void playSound(Mix_Chunk* sound, int channel, int volume = MIX_MAX_VOLUME);
 
+    //分数相关
+    void setFinalScore(int score) { finalScore = score; }
+    int getFinalScore() { return finalScore; }
+    void loadHighScore();
+    void saveHighScore(int score);
+    int getHighScore() { return hiScore; }
 private:
     void loadSetting();
     Game();
@@ -79,6 +85,10 @@ private:
 
     //音效库
     std::map<std::string, Mix_Chunk*> sounds;
+
+    //分数相关
+    int finalScore = 0;
+    int hiScore = 0;
 };
 
 #endif

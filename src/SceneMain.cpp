@@ -1,5 +1,6 @@
 #include "SceneMain.h"
 #include "SceneTitle.h"
+#include "SceneEnd.h"
 #include "Game.h"
 #include "EnemyBullet.h"
 #include "BulletPattern.h"
@@ -24,6 +25,7 @@ SceneMain::~SceneMain()
 void SceneMain::init()
 {
     game.playBGM("assets\\music\\bgm\\th08_09.mid");
+    game.loadHighScore();
     //导入波次表
     loadWavesFromFile("data\\waves.json");
     //导入ui配置表
@@ -191,13 +193,24 @@ void SceneMain::update(float deltaTime)
                 delete bossFightController;
                 bossFightController = nullptr;
             }
+            gameOver();
+            return;
         }
     }
     //生成敌人
-    updateWave(deltaTime);
+    if(!isDead) updateWave(deltaTime);
     //更新特效
     effectManager->update(deltaTime);
-    
+
+    if(isDead)
+    {
+        deadTimer += deltaTime;
+        if(deadTimer >= 1.0f)
+        {
+            SceneEnd* sceneEnd = new SceneEnd();
+            game.changeScene(sceneEnd);
+        }
+    }
 }
 
 void SceneMain::render()
@@ -479,10 +492,6 @@ void SceneMain::updatePlayer(float deltaTime)
     //更新玩家判定点
     updatePlayerPoint(deltaTime);
 
-    if(isDead)
-    {
-        return;
-    }
     if(isDeadInterval)
     {
         deadIntervalTime += deltaTime;
@@ -503,16 +512,22 @@ void SceneMain::updatePlayer(float deltaTime)
     if(invincible)
     {
         invincibleTimer += deltaTime;
+        int blinkPhase = static_cast<int>(invincibleTimer * 10) % 2;
+        SDL_SetTextureColorMod(player.texture,
+            blinkPhase == 0 ? 255 : 100,
+            blinkPhase == 0 ? 255 : 100,
+            blinkPhase == 0 ? 255 : 100);
         if(invincibleTimer >= 1.0f)
         {
             invincibleTimer = 0.0f;
             invincible = false;
+            SDL_SetTextureColorMod(player.texture, 255, 255, 255);
         }
     }
     if(player.currentHealth <= 0)
     {
         SDL_SetTextureAlphaMod(playerPoint.texture, 0);//判定点透明
-        isDead = true;
+        gameOver();
     }
 }
 
@@ -1034,7 +1049,7 @@ void SceneMain::loadUIFile(const std::string& filename)
     scoreStartX = data["score"]["startX"].get<int>();
     scoreStartY = data["score"]["startY"].get<int>();
     scoreWidth = data["score"]["width"].get<int>();
-    scoreHeight = data["score"]["width"].get<int>();
+    scoreHeight = data["score"]["height"].get<int>();
 
     uiItems.clear();
     
@@ -1050,11 +1065,18 @@ void SceneMain::loadUIFile(const std::string& filename)
             item["src"]["w"].get<int>(),
             item["src"]["h"].get<int>()
         };
+        float itemMult = (uiIt.type == UiItemType::title) ? 1.8f : ui_mult;
+        int dstX = (uiIt.type == UiItemType::title)
+            ? margin + game.getPlayAreaWidth() + (game.getWindowWidth() - game.getPlayAreaWidth() - margin * 2 - static_cast<int>(uiIt.src.w * itemMult)) / 2
+            : margin + game.getPlayAreaWidth() + ui_offset_startX;
+        int dstY = (uiIt.type == UiItemType::title)
+            ? margin + game.getPlayAreaHeight() - static_cast<int>(uiIt.src.h * itemMult) - 20
+            : margin + ui_offset_startY + static_cast<int>(offset * index * ui_mult);
         uiIt.dst = {
-            margin + game.getPlayAreaWidth() + ui_offset_startX,
-            margin + ui_offset_startY + static_cast<int>(offset * index * ui_mult),
-            static_cast<int>(uiIt.src.w * ui_mult),
-            static_cast<int>(uiIt.src.h * ui_mult)
+            dstX,
+            dstY,
+            static_cast<int>(uiIt.src.w * itemMult),
+            static_cast<int>(uiIt.src.h * itemMult)
         };
         if(item.contains("variants"))
         {
@@ -1081,6 +1103,13 @@ void SceneMain::loadUIFile(const std::string& filename)
         index++;
         uiItems.push_back(uiIt);
     }
+}
+
+void SceneMain::gameOver()
+{
+    game.setFinalScore(score);
+    game.saveHighScore(score);
+    isDead = true;
 }
 
 void SceneMain::updateWave(float deltaTime) {
@@ -1448,7 +1477,7 @@ void SceneMain::renderPlayerUI()
         }
         else if(uiItems[i].type == UiItemType::hiScore)
         {
-            //todo
+            renderScore(game.getHighScore(), uiItems[i].dst.x + uiItems[i].dst.w, uiItems[i].dst.y);
         }
         SDL_RenderCopy(game.getRenderer(), ui_playerTexture, &uiItems[i].src, &uiItems[i].dst);
     }
@@ -1519,7 +1548,7 @@ bool SceneMain::ColliderEnemies(Enemy *enemy)
         };
         if(SDL_HasIntersection(&playerPointRect, &enemyRect))
         {
-            player.currentHealth -= 1;
+            playerTakeDamage(1);
             enemyExplode(enemy);
             return true;
         }
@@ -1543,6 +1572,10 @@ bool SceneMain::ColliderEnemies(Enemy *enemy)
 
 void SceneMain::ColliderBossBullet()
 {
+    if(isDeadInterval)
+    {
+        return;
+    }
     BossBullets = bulletManager->getBullets();
     for(auto it = BossBullets->begin(); it != BossBullets->end(); )
     {

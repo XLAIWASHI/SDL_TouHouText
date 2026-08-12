@@ -17,7 +17,8 @@
                 {"type": "bomb", "src": {"x": 80, "y": 80, "w": 16, "h": 16}}
             ],
             "_comment": "Bomb个数"
-        }
+        },
+        {"type": "title", "src": {"x": 128, "y": 16, "w": 128, "h": 240}, "_comment": "标题"}
     ],
     "score": {
         "startX": 0,

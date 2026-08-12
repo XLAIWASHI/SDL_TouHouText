@@ -100,7 +100,13 @@ enum class UiItemType
     player,
     spell,
     health,
-    bomb
+    bomb,
+    title
+};
+
+enum class EndItemType
+{
+    finishScore,
 };
 
 struct Settings
@@ -132,6 +138,13 @@ struct UiItem
     SDL_Rect src;
     SDL_Rect dst;
     std::vector<UiItem> variants;
+};
+
+struct EndItem
+{
+    EndItemType type;
+    SDL_Rect src;
+    SDL_Rect dst;
 };
 
 struct Player

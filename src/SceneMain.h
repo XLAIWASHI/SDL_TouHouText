@@ -94,6 +94,9 @@ private:
     void addScore(int value);
     void loadUIFile(const std::string& filename);
 
+    //游戏结束
+    void gameOver();
+
     //分数相关
     int score = 0;
     std::vector<UiItem> uiItems;
@@ -127,6 +130,7 @@ private:
     float invincibleTimer = 0.0f;
     bool isDeadInterval = false;//死亡间隔是否开始
     float deadIntervalTime = 0.0f;
+    float deadTimer = 0.0f;
     Enemy enemyTemplate;
 
     //容器相关

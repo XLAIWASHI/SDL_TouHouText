@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "SceneTitle.h"
 #include "SceneMain.h"
+#include "SceneEnd.h"
 #include <nlohmann/json.hpp>
 #include <iostream>
 
@@ -22,6 +23,30 @@ void Game::saveSetting()
     else
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to save settings.json");
+    }
+}
+
+void Game::loadHighScore()
+{
+    std::ifstream file("data\\hiscore.json");
+    if(file.is_open())
+    {
+        json data;
+        file >> data;
+        hiScore = data.value("hiScore", 0);
+    }
+}
+
+void Game::saveHighScore(int score)
+{
+    if(score <= hiScore) return;
+    hiScore = score;
+    json data;
+    data["hiScore"] = hiScore;
+    std::ofstream file("data\\hiscore.json");
+    if(file.is_open())
+    {
+        file << data.dump(4);
     }
 }
 
@@ -204,7 +229,7 @@ void Game::init()
     //载入setting.json
     loadSetting();
 
-    currentScene = new SceneTitle;
+    currentScene = new SceneTitle();
     currentScene->init();
 
     //设置音效channel数量

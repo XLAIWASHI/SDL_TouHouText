@@ -22,5 +22,11 @@ UiItemType strToUi(std::string str)
     if(str == "player") return UiItemType::player;
     if(str == "spell") return UiItemType::spell;
     if(str == "health") return UiItemType::health;
-    if(str == "bomb") return UiItemType::bomb; 
+    if(str == "bomb") return UiItemType::bomb;
+    if(str == "title") return UiItemType::title;
+}
+
+EndItemType strToEnd(std::string str)
+{
+    if(str == "finishScore") return EndItemType::finishScore;
 }

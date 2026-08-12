@@ -1,0 +1,15 @@
+{
+    "end": [
+        {"type": "finishScore", "src": {"x": 0, "y": 32, "w": 80, "h": 16}, "_comment": "最终得分"}
+    ],
+    "score": {
+        "startX": 0,
+        "startY": 48,
+        "width": 16,
+        "height": 16,
+        "_comment": "0-9的数字"
+    },
+    "digits": {
+        "mult": 2.5
+    }
+}
