@@ -1872,7 +1872,7 @@ void SceneMain::ColliderBomb()
 bool SceneMain::ColliderItems(Item *item)
 {
     //超界删除
-    if(item->position.y + item->w > game.getPlayAreaHeight() + margin)
+    if(item->position.y + item->h > game.getPlayAreaHeight() + margin)
     {
         delete item;
         return true;
@@ -1925,10 +1925,6 @@ bool SceneMain::ColliderItems(Item *item)
     if(item->position.x > game.getPlayAreaWidth() + margin)
     {
         item->position.x = game.getPlayAreaWidth() + margin;
-    }
-    if(item->position.y > game.getPlayAreaHeight() + margin)
-    {
-        item->position.y = game.getPlayAreaHeight() + margin;
     }
     if(item->position.y < margin)
     {
