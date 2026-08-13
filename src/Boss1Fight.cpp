@@ -344,6 +344,8 @@ void Boss1Fight::updatePattern3(float deltaTime, BulletManager &manager, SDL_FPo
     int dmg = p3HealthAtStart - boss->getHealth();
     if(dmg >= 1500 || boss->getHealth() <= 0)
     {
+        game.playSound(game.getSounds()["enep01"], -1);
+        effectManager.addEffect(bossPos, EffectType::enemyDead);
         boss->setDead();
         changeStage(Boss1Stage::Dead);
         return;

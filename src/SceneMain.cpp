@@ -206,6 +206,8 @@ void SceneMain::update(float deltaTime)
     if(!isDead) updateWave(deltaTime);
     //更新特效
     effectManager->update(deltaTime);
+    //更新items
+    updateItems(deltaTime);
 
     if(isDead)
     {
@@ -216,9 +218,6 @@ void SceneMain::update(float deltaTime)
             game.changeScene(sceneEnd);
         }
     }
-    //更新items
-    updateItems(deltaTime);
-
 }
 
 void SceneMain::render()
