@@ -30,3 +30,11 @@ EndItemType strToEnd(std::string str)
 {
     if(str == "finishScore") return EndItemType::finishScore;
 }
+
+ItemType strToItem(std::string str)
+{
+    if(str == "point") return ItemType::point;
+    if(str == "power") return ItemType::power;
+    if(str == "bomb") return ItemType::bomb;
+    if(str == "life") return ItemType::life;
+}

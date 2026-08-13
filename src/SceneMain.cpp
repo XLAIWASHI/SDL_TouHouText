@@ -10,9 +10,6 @@
 #include "EffectType.h"
 #include "Utils.h"
 #include "Bomb.h"
-#include <nlohmann/json.hpp>
-
-using json = nlohmann::json;
 
 SceneMain::SceneMain()
 {
@@ -28,8 +25,8 @@ void SceneMain::init()
     game.loadHighScore();
     //导入波次表
     loadWavesFromFile("data\\waves.json");
-    //导入ui配置表
-    loadUIFile("data\\ui.json");
+    //导入配置信息
+    loadSceneData("data\\scene_main.json");
     //ui纹理
     ui_playerTexture = IMG_LoadTexture(game.getRenderer(), "assets\\image\\UI\\front.png");
     if(ui_playerTexture == nullptr)
@@ -39,6 +36,14 @@ void SceneMain::init()
         return;
     }
     ui_ascii = IMG_LoadTexture(game.getRenderer(), "assets\\image\\UI\\ascii.png");
+    //item纹理
+    itemsTexture = IMG_LoadTexture(game.getRenderer(), "assets\\image\\effect\\etama2.png");
+    if(itemsTexture == nullptr)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "items_texture init Error: %s\n", SDL_GetError());
+        game.getIsRunning() = false;
+        return;
+    }
     //随机数
     std::random_device rd;
     gen = std::mt19937(rd());
@@ -211,6 +216,9 @@ void SceneMain::update(float deltaTime)
             game.changeScene(sceneEnd);
         }
     }
+    //更新items
+    updateItems(deltaTime);
+
 }
 
 void SceneMain::render()
@@ -238,6 +246,8 @@ void SceneMain::render()
     {
         renderBomb();
     }
+    //渲染items
+    renderItems();
     //渲染UI
     renderUI();
 }
@@ -1028,7 +1038,25 @@ void SceneMain::addScore(int value)
     score += value;
 }
 
-void SceneMain::loadUIFile(const std::string& filename)
+void SceneMain::addBomb(int value)
+{
+    player.currentBomb += value;
+    if(player.currentBomb > player.maxBomb)
+    {
+        player.currentBomb = player.maxBomb;
+    }
+}
+
+void SceneMain::addLife(int value)
+{
+    player.currentHealth += value;
+    if(player.currentHealth > player.maxHealth)
+    {
+        player.currentHealth = player.maxHealth;
+    }
+}
+
+void SceneMain::loadSceneData(const std::string & filename)
 {
     std::ifstream file(filename);
     if(!file.is_open())
@@ -1051,10 +1079,19 @@ void SceneMain::loadUIFile(const std::string& filename)
     scoreWidth = data["score"]["width"].get<int>();
     scoreHeight = data["score"]["height"].get<int>();
 
+    //ui
+    loadUI(data["uiItem"]);
+
+    //item
+    loadItem(data["item"]);
+}
+
+void SceneMain::loadUI(const json& data)
+{
     uiItems.clear();
     
     int index = 0;
-    for(auto& item : data["uiItem"])
+    for(auto& item : data)
     {
         UiItem uiIt;
         std::string typeStr = item["type"].get<std::string>();
@@ -1105,11 +1142,85 @@ void SceneMain::loadUIFile(const std::string& filename)
     }
 }
 
+void SceneMain::loadItem(const json &data)
+{
+    for(auto& item : data)
+    {
+        Item itm;
+        std::string typeStr = item["type"].get<std::string>();
+        itm.type = strToItem(typeStr);
+        SDL_Rect rect = {
+            item["src"]["x"].get<int>(),
+            item["src"]["y"].get<int>(),
+            item["src"]["w"].get<int>(),
+            item["src"]["h"].get<int>()
+        };
+        if(itm.type == ItemType::point)
+        {
+            pointSrc = rect;
+        }
+        else if(itm.type == ItemType::power)
+        {
+            powerSrc = rect;
+        }
+        else if(itm.type == ItemType::bomb)
+        {
+            bombSrc = rect;
+        }
+        else if(itm.type == ItemType::life)
+        {
+            lifeSrc = rect;
+        }
+    }
+}
+
 void SceneMain::gameOver()
 {
     game.setFinalScore(score);
     game.saveHighScore(score);
     isDead = true;
+}
+
+void SceneMain::dropItem(SDL_FPoint position)
+{
+    Item* item = new Item();
+    item->w = item->w * 2;
+    item->h = item->h * 2;
+    item->position.x = position.x - item->w / 2;
+    item->position.y = position.y - item->h / 2;
+
+    if(dis(gen) < 0.4f)
+    {
+        item->type = ItemType::point;
+        item->src = pointSrc;
+    }
+    else if(dis(gen) < 0.7f)
+    {
+        item->type = ItemType::power;
+        item->src = powerSrc;
+    }
+    else if(dis(gen) < 0.9f)
+    {
+        item->type = ItemType::bomb;
+        item->src = bombSrc;
+    }
+    else if(dis(gen) < 1.0f)
+    {
+        item->type = ItemType::life;
+        item->src = lifeSrc;
+    }
+
+    item->dst = {
+        static_cast<int>(item->position.x),
+        static_cast<int>(item->position.y),
+        static_cast<int>(item->w),
+        static_cast<int>(item->h)
+    };
+
+    item->velocity.y = -150.0f;
+    item->velocity.x = dis(gen) * 20.0f - 10.0f;
+
+    Items.push_back(item);
 }
 
 void SceneMain::updateWave(float deltaTime) {
@@ -1192,6 +1303,33 @@ void SceneMain::updateBomb(float deltaTime)
         isBomb = false;
         delete bomb;
         bomb = nullptr;
+    }
+}
+
+void SceneMain::updateItems(float deltaTime)
+{
+    if(Items.empty()) return;
+    float gravity = 150.0f;
+    for(auto it = Items.begin(); it != Items.end(); )
+    {
+        Item* item = *it;
+        
+        item->velocity.y += gravity * deltaTime;
+        item->position.y += item->velocity.y * deltaTime;
+        item->position.x += item->velocity.x * deltaTime;
+
+        item->dst.x = static_cast<int>(item->position.x);
+        item->dst.y = static_cast<int>(item->position.y);
+
+        //碰撞检测
+        if(ColliderItems(item))
+        {
+            it = Items.erase(it);
+        }
+        else
+        {
+            it++;
+        }
     }
 }
 
@@ -1524,6 +1662,15 @@ void SceneMain::renderBomb()
     SDL_RenderSetClipRect(game.getRenderer(), nullptr);
 }
 
+void SceneMain::renderItems()
+{
+    if(Items.empty()) return;
+    for(auto item : Items)
+    {
+        SDL_RenderCopy(game.getRenderer(), itemsTexture, &item->src, &item->dst);
+    }
+}
+
 bool SceneMain::ColliderEnemies(Enemy *enemy)
 {
     //超界删除
@@ -1722,6 +1869,73 @@ void SceneMain::ColliderBomb()
         }
     }
 }
+bool SceneMain::ColliderItems(Item *item)
+{
+    //超界删除
+    if(item->position.y + item->w > game.getPlayAreaHeight() + margin)
+    {
+        delete item;
+        return true;
+    }
+    else//碰到玩家删除
+    {
+        SDL_Rect playerPointRect = {
+            static_cast<int>(playerPoint.position.x),
+            static_cast<int>(playerPoint.position.y),
+            playerPoint.w,
+            playerPoint.h
+        };
+        SDL_Rect itemRect = {
+            static_cast<int>(item->position.x),
+            static_cast<int>(item->position.y),
+            item->w,
+            item->h
+        };
+        if(SDL_HasIntersection(&playerPointRect, &itemRect))
+        {
+            //音效
+            game.playSound(game.getSounds()["item"], -1);
+
+            //item效果
+            if(item->type == ItemType::point)
+            {
+                addScore(10);
+            }
+            else if(item->type == ItemType::power)
+            {
+                addScore(15);
+            }
+            else if(item->type == ItemType::bomb)
+            {
+                addBomb(1);
+            }
+            else if(item->type == ItemType::life)
+            {
+                addLife(1);
+            }
+            
+            return true;
+        }
+    }
+    //限制边界
+    if(item->position.x < margin)
+    {
+        item->position.x = margin;
+    }
+    if(item->position.x > game.getPlayAreaWidth() + margin)
+    {
+        item->position.x = game.getPlayAreaWidth() + margin;
+    }
+    if(item->position.y > game.getPlayAreaHeight() + margin)
+    {
+        item->position.y = game.getPlayAreaHeight() + margin;
+    }
+    if(item->position.y < margin)
+    {
+        item->position.y = margin;
+    }
+    return false;
+}
 void SceneMain::enemyExplode(Enemy *enemy)
 {
     //播放音效
@@ -1735,6 +1949,16 @@ void SceneMain::enemyExplode(Enemy *enemy)
 
     //得分
     addScore(5);
+
+    //凋落物
+    if(dis(gen) < 0.5f)
+    {
+        SDL_FPoint position = {
+            enemy->position.x + enemy->width / 2,
+            enemy->position.y + enemy->height / 2
+        };
+        dropItem(position);
+    }
 
     delete enemy;
 }

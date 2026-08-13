@@ -225,6 +225,7 @@ void Game::init()
     sounds["enep00"] = Mix_LoadWAV("assets\\music\\sound\\se_enep00.wav");
     sounds["enep01"] = Mix_LoadWAV("assets\\music\\sound\\se_enep01.wav");
     sounds["gun"] = Mix_LoadWAV("assets\\music\\sound\\se_gun00.wav");
+    sounds["item"] = Mix_LoadWAV("assets\\music\\sound\\se_item00.wav");
 
     //载入setting.json
     loadSetting();

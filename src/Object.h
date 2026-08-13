@@ -73,7 +73,10 @@ enum class BossMoveType
 
 enum class ItemType
 {
-    
+    point,
+    power,
+    bomb,
+    life
 };
 
 enum class TitleButtonType
@@ -242,14 +245,13 @@ struct PlayArea
 
 struct Item
 {
-    SDL_Texture* texture = nullptr;
+    ItemType type;
+    SDL_Rect src;
+    SDL_Rect dst;
     SDL_FPoint position = {0.0f, 0.0f};
-    SDL_FPoint direction = {0.0f, 0.0f};
-    int w = 0;
-    int h = 0;
-    int speed = 400;
-
-
+    SDL_FPoint velocity = {0.0f, 0.0f};
+    int w = 16;
+    int h = 16;
 };
 
 #endif

@@ -10,6 +10,9 @@
 #include <random>
 #include <vector>
 #include <fstream>
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 class EnemyBullet;
 class BulletPattern;
@@ -44,6 +47,7 @@ private:
     void updateEnemiesBullet(float deltaTime);
     void updateWave(float deltaTime);//更新波次表
     void updateBomb(float deltaTime);
+    void updateItems(float deltaTime);
 
     //渲染相关
     void renderBackground();
@@ -61,12 +65,15 @@ private:
     void renderScore(int value, int x, int y);
     void renderDigit(int digit, int x, int y);
     void renderBomb();
+    void renderItems();
 
     //碰撞检测
     bool ColliderEnemies(Enemy* enemy);
     void ColliderBossBullet();
     void ColliderBoss();
     void ColliderBomb();
+    bool ColliderItems(Item* item);
+
     void enemyExplode(Enemy* enemy);
 
     //玩家减血
@@ -92,10 +99,20 @@ private:
     
     //得分相关
     void addScore(int value);
-    void loadUIFile(const std::string& filename);
+    void addBomb(int value);
+    void addLife(int value);
+
+
+    //读取文件
+    void loadSceneData(const std::string& filename);
+    void loadUI(const json& data);
+    void loadItem(const json& data);
 
     //游戏结束
     void gameOver();
+
+    //生成item
+    void dropItem(SDL_FPoint position);
 
     //分数相关
     int score = 0;
@@ -111,6 +128,13 @@ private:
     int scoreStartY = 0;
     int scoreWidth = 0;
     int scoreHeight = 0;
+
+    //item相关
+    SDL_Texture* itemsTexture = nullptr;
+    SDL_Rect pointSrc;
+    SDL_Rect powerSrc;
+    SDL_Rect bombSrc;
+    SDL_Rect lifeSrc;
 
     //Bomb
     SDL_Texture* bombTexture = nullptr;
@@ -140,6 +164,7 @@ private:
     std::list<Enemy*> Enemies;//敌人库
     std::list<EnemyBullet*> EnemiesBullets;//敌人子弹库
     std::list<EnemyBullet*>* BossBullets = nullptr;
+    std::list<Item*> Items;
 
     //随机数相关
     std::mt19937 gen;
