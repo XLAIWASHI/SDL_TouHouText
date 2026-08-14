@@ -52,6 +52,8 @@ private:
     //渲染相关
     void renderBackground();
     void renderPlayArea();
+    void renderScanLines();
+    void renderPlayAreaBackground();
     void renderPlayerAnimation();
     void renderPlayerPoint();
     void renderPlayerBullet();
@@ -102,6 +104,11 @@ private:
     void addBomb(int value);
     void addLife(int value);
 
+    //背景
+    void initScanLines();
+
+    //辅助
+    void showFPS();
 
     //读取文件
     void loadSceneData(const std::string& filename);
@@ -141,11 +148,16 @@ private:
     bool isBomb = false;
     Bomb* bomb = nullptr;
 
+    
 
     int margin = 32;
 
     Background background;
     PlayArea playarea;
+
+    //new
+    SDL_Texture* playerArea1 = nullptr;
+    SDL_Texture* playerArea2 = nullptr;
 
     Player player;
     PlayerPoint playerPoint;

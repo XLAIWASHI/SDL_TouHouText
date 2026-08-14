@@ -233,14 +233,31 @@ struct Title
     int height = 0;
 };
 
+struct ScanLine
+{
+    SDL_Rect src;
+    SDL_Rect dst;
+    int width = 0;
+};
+
 struct PlayArea
 {
+    //old
     SDL_Texture* texture = nullptr;
     SDL_FPoint position = {0.0f, 0.0f};
     float offset = 0.0f;
     int width = 0;
     int height = 0;
     int speed = 30;
+
+    //new
+    std::vector<ScanLine> scanLines;
+    int bg_minWidth = 0;
+    int bg_maxWidth = 0;
+    float bg_increment = 0.0f;
+    float bg_offset = 0.0f;
+    float bg_speed = 0.0f;
+
 };
 
 struct Item

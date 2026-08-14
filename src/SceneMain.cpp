@@ -67,6 +67,24 @@ void SceneMain::init()
     }
     SDL_QueryTexture(playarea.texture, nullptr, nullptr, &playarea.width, &playarea.height);
     playarea.width = game.getPlayAreaWidth();
+    
+    playerArea1 = IMG_LoadTexture(game.getRenderer(), "assets\\image\\playarea\\stg5bg.png");
+    if(playerArea1 == nullptr)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "playArea1 init Error: %s\n", SDL_GetError());
+        game.getIsRunning() = false;
+        return;
+    }
+    playerArea2 = IMG_LoadTexture(game.getRenderer(), "assets\\image\\playarea\\stg5bg2.png");
+    if(playerArea2 == nullptr)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "playArea2 init Error: %s\n", SDL_GetError());
+        game.getIsRunning() = false;
+        return;
+    }
+
+    initScanLines();
+
     //玩家资源导入
     player.texture = IMG_LoadTexture(game.getRenderer(), "assets\\image\\player\\pl00.png");
     if(player.texture == nullptr)
@@ -162,6 +180,8 @@ void SceneMain::handleEvent(SDL_Event *event)
 
 void SceneMain::update(float deltaTime)
 {
+    //辅助
+    showFPS();
     //按键控制
     keyboardControl(deltaTime);
     //更新游玩区
@@ -225,7 +245,9 @@ void SceneMain::render()
     //渲染背景
     renderBackground();
     //渲染游玩区
-    renderPlayArea();
+    renderPlayAreaBackground();
+    renderScanLines();
+    //renderPlayArea();
     //渲染敌人
     renderEnemies();
     if(boss != nullptr)
@@ -267,6 +289,14 @@ void SceneMain::clean()
     if(playarea.texture != nullptr)
     {
         SDL_DestroyTexture(playarea.texture);
+    }
+    if(playerArea1 != nullptr)
+    {
+        SDL_DestroyTexture(playerArea1);
+    }
+    if(playerArea2 != nullptr)
+    {
+        SDL_DestroyTexture(playerArea2);
     }
     //玩家
     if(player.texture != nullptr)
@@ -1055,6 +1085,52 @@ void SceneMain::addLife(int value)
     }
 }
 
+void SceneMain::initScanLines()
+{
+    playarea.scanLines.clear();
+    int n = game.getPlayAreaHeight();
+    playarea.scanLines.resize(n);
+
+    int w = 0, h = 0;
+    SDL_QueryTexture(playerArea1, nullptr, nullptr, &w, &h);
+
+    playarea.bg_minWidth = 350;
+    playarea.bg_maxWidth = game.getPlayAreaWidth();
+    playarea.bg_increment = static_cast<float>(playarea.bg_maxWidth - playarea.bg_minWidth) / (playarea.scanLines.size() - 1);
+    playarea.bg_speed = 1.0f;
+
+
+    float scale = static_cast<float>(h) / n; //一个像素对应多少纹理
+    for(int i = 0; i < n; i++)
+    {
+        int y = static_cast<int>(i * scale);
+        
+        playarea.scanLines[i].width = playarea.bg_minWidth + playarea.bg_increment * i;
+        playarea.scanLines[i].src = {0, y, w, 1};
+    }
+}
+
+void SceneMain::showFPS()
+{
+    static Uint64 lastTime = SDL_GetPerformanceCounter();
+    static int frameCount = 0;
+
+    frameCount++;
+
+    Uint64 currentTime = SDL_GetPerformanceCounter();
+    double elapsed =
+        static_cast<double>(currentTime - lastTime) /
+        SDL_GetPerformanceFrequency();
+
+    if (elapsed >= 1.0)
+    {
+        SDL_Log("FPS: %d", frameCount);
+
+        frameCount = 0;
+        lastTime = currentTime;
+    }
+}
+
 void SceneMain::loadSceneData(const std::string & filename)
 {
     std::ifstream file(filename);
@@ -1395,6 +1471,55 @@ void SceneMain::renderPlayArea()
     }
     
     SDL_RenderSetClipRect(game.getRenderer(), nullptr);
+}
+
+void SceneMain::renderScanLines()
+{
+    int n = playarea.scanLines.size();
+
+    playarea.bg_offset += playarea.bg_speed;
+
+    if(playarea.bg_offset >= n)
+    {
+        playarea.bg_offset -= n;
+    }
+
+    for(int i = 0; i < n; i++)
+    {
+        int index =
+            (i + static_cast<int>(playarea.bg_offset)) % n;
+
+        // i：决定屏幕位置和透视
+        // index：决定纹理内容
+
+        playarea.scanLines[i].dst = {
+            margin + static_cast<int>(game.getPlayAreaWidth() / 2)
+                - static_cast<int>(playarea.scanLines[i].width / 2),
+
+            margin + i,
+
+            playarea.scanLines[i].width,
+            1
+        };
+
+        SDL_RenderCopy(
+            game.getRenderer(),
+            playerArea1,
+            &playarea.scanLines[index].src,
+            &playarea.scanLines[i].dst
+        );
+    }
+}
+
+void SceneMain::renderPlayAreaBackground()
+{
+    SDL_Rect dst = {
+        margin,
+        margin,
+        game.getPlayAreaWidth(),
+        game.getPlayAreaHeight()  
+    };
+    SDL_RenderCopy(game.getRenderer(), playerArea2, nullptr, &dst);
 }
 
 void SceneMain::renderPlayerAnimation()
