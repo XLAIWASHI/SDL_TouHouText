@@ -114,6 +114,7 @@ private:
     void loadSceneData(const std::string& filename);
     void loadUI(const json& data);
     void loadItem(const json& data);
+    void loadBackground(const json& data);
 
     //游戏结束
     void gameOver();
@@ -154,6 +155,11 @@ private:
 
     Background background;
     PlayArea playarea;
+
+    //背景配置（由 scene_main.json 的 backgrround 字段加载）
+    float bg_sBottom = 0.5f;   // 底部纵向采样纹素量（<1 近处放大）
+    int bg_copies = 16;        // 贴图纵向平铺份数
+    int bg_stripX = 200;       // playarea2 条带起始列（光照遮罩采样起点）
 
     //new
     SDL_Texture* playerArea1 = nullptr;

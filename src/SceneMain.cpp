@@ -485,11 +485,8 @@ void SceneMain::keyboardControl(float deltaTime)
 
 void SceneMain::updatePlayArea(float deltaTime)
 {
-    playarea.offset += playarea.speed * deltaTime;
-    if(playarea.offset > 0)
-    {
-        playarea.offset -= playarea.height;
-    }
+    // 伪3D漏斗滚动：纹素/秒。透视采样自动产生"近处快、远处慢"的速度差
+    playarea.bg_offset += playarea.bg_speed * deltaTime;
 }
 
 void SceneMain::updatePlayerAnimation(float deltaTime)
@@ -1093,21 +1090,25 @@ void SceneMain::initScanLines()
 
     int w = 0, h = 0;
     SDL_QueryTexture(playerArea1, nullptr, nullptr, &w, &h);
+    playarea.bg_texW = w;                     // 地面纹理尺寸
+    playarea.bg_texH = static_cast<float>(h);
 
-    playarea.bg_minWidth = 350;
+    //========== 伪3D 参数（值由 scene_main.json 的 backgrround 字段加载） ==========
+    // 远窄近宽：行宽从 bg_minWidth 线性增长到 bg_maxWidth（lerp）
+    // dst.w 只由屏幕行号决定，移动只换纹理内容、不改变透视
     playarea.bg_maxWidth = game.getPlayAreaWidth();
-    playarea.bg_increment = static_cast<float>(playarea.bg_maxWidth - playarea.bg_minWidth) / (playarea.scanLines.size() - 1);
-    playarea.bg_speed = 1.0f;
+    float d = -playarea.bg_horizon;           // 消失点到顶部行的距离
+    playarea.bg_minWidth = static_cast<int>(playarea.bg_maxWidth * d / (n - 1 + d));
+    playarea.bg_increment = static_cast<float>(playarea.bg_maxWidth - playarea.bg_minWidth) / (n - 1);
 
-
-    float scale = static_cast<float>(h) / n; //一个像素对应多少纹理
+    // 每条扫描线对应纹理中的一行（src = {0, y, w, 1}），宽度只与屏幕行号有关
     for(int i = 0; i < n; i++)
     {
-        int y = static_cast<int>(i * scale);
-        
-        playarea.scanLines[i].width = playarea.bg_minWidth + playarea.bg_increment * i;
-        playarea.scanLines[i].src = {0, y, w, 1};
+        playarea.scanLines[i].width =
+            playarea.bg_minWidth + static_cast<int>(playarea.bg_increment * i);
     }
+
+    playarea.bg_offset = 0.0f;
 }
 
 void SceneMain::showFPS()
@@ -1159,6 +1160,9 @@ void SceneMain::loadSceneData(const std::string & filename)
 
     //item
     loadItem(data["item"]);
+
+    //背景
+    loadBackground(data["backgrround"]);
 }
 
 void SceneMain::loadUI(const json& data)
@@ -1247,6 +1251,17 @@ void SceneMain::loadItem(const json &data)
             lifeSrc = rect;
         }
     }
+}
+
+void SceneMain::loadBackground(const json &data)
+{
+    //伪3D背景参数，全部由 scene_main.json 的 backgrround 字段加载
+    playarea.bg_horizon = data["horizon"].get<float>();
+    playarea.bg_speed = data["speed"].get<float>();
+    playarea.speed = data["baseSpeed"].get<int>();
+    bg_sBottom = data["sBottom"].get<float>();
+    bg_copies = data["copies"].get<int>();
+    bg_stripX = data["stripX"].get<int>();
 }
 
 void SceneMain::gameOver()
@@ -1475,29 +1490,31 @@ void SceneMain::renderPlayArea()
 
 void SceneMain::renderScanLines()
 {
-    int n = playarea.scanLines.size();
-
-    playarea.bg_offset += playarea.bg_speed;
-
-    if(playarea.bg_offset >= n)
+    const int n = static_cast<int>(playarea.scanLines.size());
+    const int texW = playarea.bg_texW;
+    const int texH = static_cast<int>(playarea.bg_texH);
+    if(n <= 0 || texW <= 0 || texH <= 0)
     {
-        playarea.bg_offset -= n;
+        return;
     }
+
+    // 循环偏移：内容随 offset 增大而向下移动，取模保证无限循环
+    int scroll = static_cast<int>(playarea.bg_offset) % texH;
+
+    SDL_Rect clip = {margin, margin, game.getPlayAreaWidth(), game.getPlayAreaHeight()};
+    SDL_RenderSetClipRect(game.getRenderer(), &clip);
 
     for(int i = 0; i < n; i++)
     {
-        int index =
-            (i + static_cast<int>(playarea.bg_offset)) % n;
+        // 屏幕行 i 取纹理行 (i - scroll)：相邻屏幕行取相邻纹理行 => 纹理纵向连续
+        int sy = (i - scroll + texH) % texH;
 
-        // i：决定屏幕位置和透视
-        // index：决定纹理内容
+        playarea.scanLines[i].src = {0, sy, texW, 1};
 
+        // 远窄近宽：dst.w 只由屏幕行号决定（移动只换内容、不改变透视）
         playarea.scanLines[i].dst = {
-            margin + static_cast<int>(game.getPlayAreaWidth() / 2)
-                - static_cast<int>(playarea.scanLines[i].width / 2),
-
+            margin + game.getPlayAreaWidth() / 2 - playarea.scanLines[i].width / 2,
             margin + i,
-
             playarea.scanLines[i].width,
             1
         };
@@ -1505,21 +1522,38 @@ void SceneMain::renderScanLines()
         SDL_RenderCopy(
             game.getRenderer(),
             playerArea1,
-            &playarea.scanLines[index].src,
+            &playarea.scanLines[i].src,
             &playarea.scanLines[i].dst
         );
     }
+
+    SDL_RenderSetClipRect(game.getRenderer(), nullptr);
 }
 
 void SceneMain::renderPlayAreaBackground()
 {
-    SDL_Rect dst = {
-        margin,
-        margin,
-        game.getPlayAreaWidth(),
-        game.getPlayAreaHeight()  
-    };
-    SDL_RenderCopy(game.getRenderer(), playerArea2, nullptr, &dst);
+    // playarea2：普通 2D 平铺背景（不拉伸），与地面共用 bg_offset 同步向下滚动
+    int w = 0, h = 0;
+    SDL_QueryTexture(playerArea2, nullptr, nullptr, &w, &h);
+    if(w <= 0 || h <= 0)
+    {
+        return;
+    }
+
+    SDL_Rect clip = {margin, margin, game.getPlayAreaWidth(), game.getPlayAreaHeight()};
+    SDL_RenderSetClipRect(game.getRenderer(), &clip);
+
+    int offset = static_cast<int>(playarea.bg_offset) % h;
+    for(int posY = margin - h + offset; posY < margin + game.getPlayAreaHeight(); posY += h)
+    {
+        for(int posX = margin; posX < margin + game.getPlayAreaWidth(); posX += w)
+        {
+            SDL_Rect rect = {posX, posY, w, h};
+            SDL_RenderCopy(game.getRenderer(), playerArea2, nullptr, &rect);
+        }
+    }
+
+    SDL_RenderSetClipRect(game.getRenderer(), nullptr);
 }
 
 void SceneMain::renderPlayerAnimation()

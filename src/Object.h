@@ -238,6 +238,7 @@ struct ScanLine
     SDL_Rect src;
     SDL_Rect dst;
     int width = 0;
+    float baseV = 0.0f; //采样的基准纹理坐标
 };
 
 struct PlayArea
@@ -252,12 +253,14 @@ struct PlayArea
 
     //new
     std::vector<ScanLine> scanLines;
-    int bg_minWidth = 0;
+    int bg_minWidth = 70;
     int bg_maxWidth = 0;
     float bg_increment = 0.0f;
     float bg_offset = 0.0f;
     float bg_speed = 0.0f;
-
+    float bg_horizon = -100.0f;   // 消失点所在行（负数=在游玩区上边缘之上，由bg_minWidth反推）
+    float bg_texH = 0.0f;         // 地面纹理高度（纹素）
+    int bg_texW = 0;              // 地面纹理宽度（纹素）
 };
 
 struct Item

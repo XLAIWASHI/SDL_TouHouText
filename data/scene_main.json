@@ -38,5 +38,14 @@
         "offset_startY": 10,
         "offset": 30,
         "mult": 2.5
+    },
+    "backgrround": {
+        "horizon": -300,
+        "sBottom": 0.5,
+        "speed": 30,
+        "baseSpeed": 30,
+        "copies": 16,
+        "stripX": 200,
+        "_comment": "伪3D背景参数：horizon=消失点行(负数，越小漏斗越窄)；sBottom=底部纵向采样纹素量(<1放大)；speed=滚动纹素/秒；baseSpeed=保留备用；copies=贴图纵向平铺份数；stripX=playarea2光照条带起始列"
     }
 }
