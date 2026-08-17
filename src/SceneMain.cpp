@@ -67,24 +67,6 @@ void SceneMain::init()
     }
     SDL_QueryTexture(playarea.texture, nullptr, nullptr, &playarea.width, &playarea.height);
     playarea.width = game.getPlayAreaWidth();
-    
-    playerArea1 = IMG_LoadTexture(game.getRenderer(), "assets\\image\\playarea\\stg5bg.png");
-    if(playerArea1 == nullptr)
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "playArea1 init Error: %s\n", SDL_GetError());
-        game.getIsRunning() = false;
-        return;
-    }
-    playerArea2 = IMG_LoadTexture(game.getRenderer(), "assets\\image\\playarea\\stg5bg2.png");
-    if(playerArea2 == nullptr)
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "playArea2 init Error: %s\n", SDL_GetError());
-        game.getIsRunning() = false;
-        return;
-    }
-
-    initScanLines();
-
     //玩家资源导入
     player.texture = IMG_LoadTexture(game.getRenderer(), "assets\\image\\player\\pl00.png");
     if(player.texture == nullptr)
@@ -164,6 +146,9 @@ void SceneMain::init()
         game.getIsRunning() = false;
         return;
     }
+
+    //伪3D背景初始化
+    pseudo3DBg.init(game.getRenderer(), "assets\\image\\playarea\\stg5bg.png");
 }
 
 void SceneMain::handleEvent(SDL_Event *event)
@@ -180,12 +165,13 @@ void SceneMain::handleEvent(SDL_Event *event)
 
 void SceneMain::update(float deltaTime)
 {
-    //辅助
-    showFPS();
     //按键控制
     keyboardControl(deltaTime);
     //更新游玩区
     updatePlayArea(deltaTime);
+    // === AI 实现开始：伪3D背景滚动 ===
+    pseudo3DBg.update(deltaTime);
+    // === AI 实现结束 ===
     //更新玩家
     updatePlayer(deltaTime);
     //更新敌人
@@ -244,10 +230,9 @@ void SceneMain::render()
 {
     //渲染背景
     renderBackground();
-    //渲染游玩区
-    renderPlayAreaBackground();
-    renderScanLines();
-    //renderPlayArea();
+    // === AI 实现开始：伪3D背景渲染（替代旧的 renderPlayArea） ===
+    pseudo3DBg.render(game.getRenderer());
+    // === AI 实现结束 ===
     //渲染敌人
     renderEnemies();
     if(boss != nullptr)
@@ -290,14 +275,9 @@ void SceneMain::clean()
     {
         SDL_DestroyTexture(playarea.texture);
     }
-    if(playerArea1 != nullptr)
-    {
-        SDL_DestroyTexture(playerArea1);
-    }
-    if(playerArea2 != nullptr)
-    {
-        SDL_DestroyTexture(playerArea2);
-    }
+    // === AI 实现开始：伪3D背景清理 ===
+    pseudo3DBg.clean();
+    // === AI 实现结束 ===
     //玩家
     if(player.texture != nullptr)
     {
@@ -485,8 +465,11 @@ void SceneMain::keyboardControl(float deltaTime)
 
 void SceneMain::updatePlayArea(float deltaTime)
 {
-    // 伪3D漏斗滚动：纹素/秒。透视采样自动产生"近处快、远处慢"的速度差
-    playarea.bg_offset += playarea.bg_speed * deltaTime;
+    playarea.offset += playarea.speed * deltaTime;
+    if(playarea.offset > 0)
+    {
+        playarea.offset -= playarea.height;
+    }
 }
 
 void SceneMain::updatePlayerAnimation(float deltaTime)
@@ -629,52 +612,110 @@ void SceneMain::updatePlayerBullet(float deltaTime)
 
         if(bullet->type == PlayerBulletType::bullet2)
         {
-            bool hasTarget = false;
-            float nearestDist = 0.0f;
+            // 检查当前目标是否失效
+            if(playerBulletTarget != nullptr && playerBulletTarget->health <= 0)
+            {
+                playerBulletTarget = nullptr;
+            }
+
+            if(playerBulletBossTarget != nullptr && boss == nullptr)
+            {
+                playerBulletBossTarget = nullptr;
+            }
+
+            // 没有目标，重新寻找
+            if(playerBulletTarget == nullptr && playerBulletBossTarget == nullptr)
+            {
+                bool hasTarget = false;
+                float nearestDist = 0.0f;
+
+                // 寻找最近敌人
+                for(Enemy* enemy : Enemies)
+                {
+                    if(enemy->position.y >= player.position.y)
+                        continue;
+                    if(enemy->health <= 0)
+                        continue;
+
+                    float cx = enemy->position.x + enemy->width / 2;
+                    float cy = enemy->position.y + enemy->height / 2;
+                    float dx = cx - bullet->position.x;
+                    float dy = cy - bullet->position.y;
+                    float dist = dx * dx + dy * dy;
+
+                    if(!hasTarget || dist < nearestDist)
+                    {
+                        nearestDist = dist;
+                        playerBulletTarget = enemy;
+                        playerBulletBossTarget = nullptr;
+                        hasTarget = true;
+                    }
+                }
+
+                // 寻找Boss
+                if(boss != nullptr)
+                {
+                    float cx = boss->getBossPos().x + boss->getBossWidth() / 2;
+                    float cy = boss->getBossPos().y + boss->getBossHeight() / 2;
+                    float dx = cx - bullet->position.x;
+                    float dy = cy - bullet->position.y;
+                    float dist = dx * dx + dy * dy;
+
+                    if(!hasTarget || dist < nearestDist)
+                    {
+                        playerBulletTarget = nullptr;
+                        playerBulletBossTarget = boss;
+                    }
+                }
+            }
+
             SDL_FPoint targetPos = {0, 0};
 
-            for(Enemy* enemy : Enemies)
+            if(playerBulletTarget != nullptr)
             {
-                float cx = enemy->position.x + enemy->width / 2;
-                float cy = enemy->position.y + enemy->height / 2;
-                float dx = cx - bullet->position.x;
-                float dy = cy - bullet->position.y;
-                float dist = dx * dx + dy * dy;
-                if(!hasTarget || dist < nearestDist)
-                {
-                    nearestDist = dist;
-                    targetPos = {cx, cy};
-                    hasTarget = true;
-                }
+                targetPos = {
+                    playerBulletTarget->position.x + playerBulletTarget->width / 2,
+                    playerBulletTarget->position.y + playerBulletTarget->height / 2
+                };
+            }
+            else if(playerBulletBossTarget != nullptr)
+            {
+                targetPos = {
+                    playerBulletBossTarget->getBossPos().x + playerBulletBossTarget->getBossWidth() / 2,
+                    playerBulletBossTarget->getBossPos().y + playerBulletBossTarget->getBossHeight() / 2
+                };
             }
 
-            if(boss != nullptr)
-            {
-                float cx = boss->getBossPos().x + boss->getBossWidth() / 2;
-                float cy = boss->getBossPos().y + boss->getBossHeight() / 2;
-                float dx = cx - bullet->position.x;
-                float dy = cy - bullet->position.y;
-                float dist = dx * dx + dy * dy;
-                if(!hasTarget || dist < nearestDist)
-                {
-                    targetPos = {cx, cy};
-                    hasTarget = true;
-                }
-            }
-
-            if(hasTarget)
+            // 有目标，进行追踪
+            if(playerBulletTarget != nullptr || playerBulletBossTarget != nullptr)
             {
                 float dx = targetPos.x - bullet->position.x;
                 float dy = targetPos.y - bullet->position.y;
                 float len = sqrt(dx * dx + dy * dy);
-                SDL_FPoint targetDir = {dx / len, dy / len};
 
-                float smooth = 0.08f;
-                bullet->direction.x += (targetDir.x - bullet->direction.x) * smooth;
-                bullet->direction.y += (targetDir.y - bullet->direction.y) * smooth;
-                float normalLen = sqrt(bullet->direction.x * bullet->direction.x + bullet->direction.y * bullet->direction.y);
-                bullet->direction.x /= normalLen;
-                bullet->direction.y /= normalLen;
+                if(len != 0)
+                {
+                    SDL_FPoint targetDir = {
+                        dx / len,
+                        dy / len
+                    };
+
+                    float smooth = 0.08f;
+
+                    bullet->direction.x += 
+                        (targetDir.x - bullet->direction.x) * smooth;
+
+                    bullet->direction.y += 
+                        (targetDir.y - bullet->direction.y) * smooth;
+
+                    float normalLen = sqrt(
+                        bullet->direction.x * bullet->direction.x +
+                        bullet->direction.y * bullet->direction.y
+                    );
+
+                    bullet->direction.x /= normalLen;
+                    bullet->direction.y /= normalLen;
+                }
             }
 
             bullet->position.x += bullet->speed * bullet->direction.x * deltaTime;
@@ -693,6 +734,7 @@ void SceneMain::updatePlayerBullet(float deltaTime)
         else
         {
             bullet->position.y -= bullet->speed * deltaTime;
+
             if(bullet->position.y < margin)
             {
                 delete bullet;
@@ -702,12 +744,14 @@ void SceneMain::updatePlayerBullet(float deltaTime)
         }
 
         bool hit = false;
-         SDL_Rect bulletRect = {
+
+        SDL_Rect bulletRect = {
             static_cast<int>(bullet->position.x),
             static_cast<int>(bullet->position.y),
             bullet->width,
             bullet->height
-         };
+        };
+
         for(Enemy* enemy : Enemies)
         {
             SDL_Rect enemyRect = {
@@ -716,15 +760,18 @@ void SceneMain::updatePlayerBullet(float deltaTime)
                 enemy->width,
                 enemy->height
             };
+
             if(SDL_HasIntersection(&bulletRect, &enemyRect))
             {
                 enemy->health -= bullet->damage;
+
                 delete bullet;
                 it = PlayerBullets.erase(it);
                 hit = true;
                 break;
             }
         }
+
         if(!hit && boss != nullptr)
         {
             SDL_Rect bossRect = {
@@ -733,14 +780,17 @@ void SceneMain::updatePlayerBullet(float deltaTime)
                 boss->getBossWidth(),
                 boss->getBossHeight()
             };
+
             if(SDL_HasIntersection(&bulletRect, &bossRect))
             {
                 boss->takeDamage(bullet->damage);
+
                 delete bullet;
                 it = PlayerBullets.erase(it);
                 hit = true;
             }
         }
+
         if(!hit)
         {
             it++;
@@ -1082,56 +1132,6 @@ void SceneMain::addLife(int value)
     }
 }
 
-void SceneMain::initScanLines()
-{
-    playarea.scanLines.clear();
-    int n = game.getPlayAreaHeight();
-    playarea.scanLines.resize(n);
-
-    int w = 0, h = 0;
-    SDL_QueryTexture(playerArea1, nullptr, nullptr, &w, &h);
-    playarea.bg_texW = w;                     // 地面纹理尺寸
-    playarea.bg_texH = static_cast<float>(h);
-
-    //========== 伪3D 参数（值由 scene_main.json 的 backgrround 字段加载） ==========
-    // 远窄近宽：行宽从 bg_minWidth 线性增长到 bg_maxWidth（lerp）
-    // dst.w 只由屏幕行号决定，移动只换纹理内容、不改变透视
-    playarea.bg_maxWidth = game.getPlayAreaWidth();
-    float d = -playarea.bg_horizon;           // 消失点到顶部行的距离
-    playarea.bg_minWidth = static_cast<int>(playarea.bg_maxWidth * d / (n - 1 + d));
-    playarea.bg_increment = static_cast<float>(playarea.bg_maxWidth - playarea.bg_minWidth) / (n - 1);
-
-    // 每条扫描线对应纹理中的一行（src = {0, y, w, 1}），宽度只与屏幕行号有关
-    for(int i = 0; i < n; i++)
-    {
-        playarea.scanLines[i].width =
-            playarea.bg_minWidth + static_cast<int>(playarea.bg_increment * i);
-    }
-
-    playarea.bg_offset = 0.0f;
-}
-
-void SceneMain::showFPS()
-{
-    static Uint64 lastTime = SDL_GetPerformanceCounter();
-    static int frameCount = 0;
-
-    frameCount++;
-
-    Uint64 currentTime = SDL_GetPerformanceCounter();
-    double elapsed =
-        static_cast<double>(currentTime - lastTime) /
-        SDL_GetPerformanceFrequency();
-
-    if (elapsed >= 1.0)
-    {
-        SDL_Log("FPS: %d", frameCount);
-
-        frameCount = 0;
-        lastTime = currentTime;
-    }
-}
-
 void SceneMain::loadSceneData(const std::string & filename)
 {
     std::ifstream file(filename);
@@ -1161,8 +1161,8 @@ void SceneMain::loadSceneData(const std::string & filename)
     //item
     loadItem(data["item"]);
 
-    //背景
-    loadBackground(data["backgrround"]);
+    //background 和 world
+    loadBackground(data["background"], data["world"]);
 }
 
 void SceneMain::loadUI(const json& data)
@@ -1253,15 +1253,46 @@ void SceneMain::loadItem(const json &data)
     }
 }
 
-void SceneMain::loadBackground(const json &data)
+void SceneMain::loadBackground(const json& dataBackground, const json& dataWorld)
 {
-    //伪3D背景参数，全部由 scene_main.json 的 backgrround 字段加载
-    playarea.bg_horizon = data["horizon"].get<float>();
-    playarea.bg_speed = data["speed"].get<float>();
-    playarea.speed = data["baseSpeed"].get<int>();
-    bg_sBottom = data["sBottom"].get<float>();
-    bg_copies = data["copies"].get<int>();
-    bg_stripX = data["stripX"].get<int>();
+    //读取素材纹理区域（地板 / 墙壁）
+    SDL_Rect floorSrc{0, 0, 0, 0};
+    SDL_Rect wallSrc{0, 0, 0, 0};
+    for (auto& item : dataBackground)
+    {
+        std::string type = item["type"].get<std::string>();
+        SDL_Rect r = {
+            item["src"]["x"].get<int>(),
+            item["src"]["y"].get<int>(),
+            item["src"]["w"].get<int>(),
+            item["src"]["h"].get<int>()
+        };
+        if (type == "floor") floorSrc = r;
+        else if (type == "wall") wallSrc = r;
+    }
+
+    //读取 world 参数
+    const json& world = dataWorld;
+    float cameraHeight = world["cameraHeight"].get<float>();
+    float focal        = world["focal"].get<float>();
+    float horizonY     = world["horizonY"].get<float>();
+    float wallHeight   = world["wallHeight"].get<float>();
+    int   zSegments    = world["zSegments"].get<int>();
+    float scrollSpeed  = world["scrollSpeed"].get<float>();
+    float vTiles       = world["vTiles"].get<float>();
+
+    float halfWidth    = world["floor"]["halfWidth"].get<float>();
+    float zNear        = world["floor"]["zNear"].get<float>();
+    float zFar         = world["floor"]["zFar"].get<float>();
+
+    //游玩区屏幕矩形（margin 到 margin+宽/高）
+    SDL_Rect playArea = {margin, margin, game.getPlayAreaWidth(), game.getPlayAreaHeight()};
+
+    //配置并生成网格
+    pseudo3DBg.setConfig(cameraHeight, focal, horizonY, wallHeight,
+                         halfWidth, zNear, zFar,
+                         zSegments, scrollSpeed, vTiles,
+                         floorSrc, wallSrc, playArea);
 }
 
 void SceneMain::gameOver()
@@ -1449,13 +1480,13 @@ void SceneMain::spawnEnemyAtType(EnemyType type, float x, float y, int dirX, int
     switch(type)
     {
         case EnemyType::enemyBase1:
-            enemy->speed = 140.0f; enemy->health = 1; enemy->cooldown = 1800; break;
+            enemy->speed = 140.0f; enemy->health = 10; enemy->cooldown = 1800; break;
         case EnemyType::enemyBase2:
-            enemy->speed = 100.0f; enemy->health = 2; enemy->cooldown = 1800; break;
+            enemy->speed = 100.0f; enemy->health = 5; enemy->cooldown = 1800; break;
         case EnemyType::enemyBase3:
-            enemy->speed = 130.0f; enemy->health = 3; enemy->cooldown = 1800; break;
+            enemy->speed = 130.0f; enemy->health = 7; enemy->cooldown = 1800; break;
         case EnemyType::enemyBase4:
-            enemy->speed = 120.0f; enemy->health = 4; enemy->cooldown = 1800; break;
+            enemy->speed = 120.0f; enemy->health = 5; enemy->cooldown = 1800; break;
         default: break;
     }
     setEnemyTotalFrame(enemy);
@@ -1485,74 +1516,6 @@ void SceneMain::renderPlayArea()
         SDL_RenderCopy(game.getRenderer(), playarea.texture, nullptr, &rect);
     }
     
-    SDL_RenderSetClipRect(game.getRenderer(), nullptr);
-}
-
-void SceneMain::renderScanLines()
-{
-    const int n = static_cast<int>(playarea.scanLines.size());
-    const int texW = playarea.bg_texW;
-    const int texH = static_cast<int>(playarea.bg_texH);
-    if(n <= 0 || texW <= 0 || texH <= 0)
-    {
-        return;
-    }
-
-    // 循环偏移：内容随 offset 增大而向下移动，取模保证无限循环
-    int scroll = static_cast<int>(playarea.bg_offset) % texH;
-
-    SDL_Rect clip = {margin, margin, game.getPlayAreaWidth(), game.getPlayAreaHeight()};
-    SDL_RenderSetClipRect(game.getRenderer(), &clip);
-
-    for(int i = 0; i < n; i++)
-    {
-        // 屏幕行 i 取纹理行 (i - scroll)：相邻屏幕行取相邻纹理行 => 纹理纵向连续
-        int sy = (i - scroll + texH) % texH;
-
-        playarea.scanLines[i].src = {0, sy, texW, 1};
-
-        // 远窄近宽：dst.w 只由屏幕行号决定（移动只换内容、不改变透视）
-        playarea.scanLines[i].dst = {
-            margin + game.getPlayAreaWidth() / 2 - playarea.scanLines[i].width / 2,
-            margin + i,
-            playarea.scanLines[i].width,
-            1
-        };
-
-        SDL_RenderCopy(
-            game.getRenderer(),
-            playerArea1,
-            &playarea.scanLines[i].src,
-            &playarea.scanLines[i].dst
-        );
-    }
-
-    SDL_RenderSetClipRect(game.getRenderer(), nullptr);
-}
-
-void SceneMain::renderPlayAreaBackground()
-{
-    // playarea2：普通 2D 平铺背景（不拉伸），与地面共用 bg_offset 同步向下滚动
-    int w = 0, h = 0;
-    SDL_QueryTexture(playerArea2, nullptr, nullptr, &w, &h);
-    if(w <= 0 || h <= 0)
-    {
-        return;
-    }
-
-    SDL_Rect clip = {margin, margin, game.getPlayAreaWidth(), game.getPlayAreaHeight()};
-    SDL_RenderSetClipRect(game.getRenderer(), &clip);
-
-    int offset = static_cast<int>(playarea.bg_offset) % h;
-    for(int posY = margin - h + offset; posY < margin + game.getPlayAreaHeight(); posY += h)
-    {
-        for(int posX = margin; posX < margin + game.getPlayAreaWidth(); posX += w)
-        {
-            SDL_Rect rect = {posX, posY, w, h};
-            SDL_RenderCopy(game.getRenderer(), playerArea2, nullptr, &rect);
-        }
-    }
-
     SDL_RenderSetClipRect(game.getRenderer(), nullptr);
 }
 
