@@ -112,6 +112,12 @@ enum class EndItemType
     finishScore,
 };
 
+enum class playAreaType
+{
+    floor,
+    wall
+};
+
 struct Settings
 {
     int vol = 100;
@@ -233,34 +239,29 @@ struct Title
     int height = 0;
 };
 
-struct ScanLine
+struct Vec3
 {
-    SDL_Rect src;
-    SDL_Rect dst;
-    int width = 0;
-    float baseV = 0.0f; //采样的基准纹理坐标
+    float x;
+    float y;
+    float z;
 };
 
 struct PlayArea
 {
-    //old
     SDL_Texture* texture = nullptr;
+    playAreaType type;
+    SDL_Rect src;
+
+    // 3D world veritces
+    Vec3 vertices[4];
+
+    // old 2D data
+    SDL_Rect dst;
     SDL_FPoint position = {0.0f, 0.0f};
     float offset = 0.0f;
     int width = 0;
     int height = 0;
     int speed = 30;
-
-    //new
-    std::vector<ScanLine> scanLines;
-    int bg_minWidth = 70;
-    int bg_maxWidth = 0;
-    float bg_increment = 0.0f;
-    float bg_offset = 0.0f;
-    float bg_speed = 0.0f;
-    float bg_horizon = -100.0f;   // 消失点所在行（负数=在游玩区上边缘之上，由bg_minWidth反推）
-    float bg_texH = 0.0f;         // 地面纹理高度（纹素）
-    int bg_texW = 0;              // 地面纹理宽度（纹素）
 };
 
 struct Item

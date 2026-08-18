@@ -4,6 +4,7 @@
 #include "Scene.h"
 #include "Object.h"
 #include "Boss.h"
+#include "Pseudo3DBackground.h"
 #include <unordered_map>
 #include <list>
 #include <string>
@@ -52,8 +53,6 @@ private:
     //渲染相关
     void renderBackground();
     void renderPlayArea();
-    void renderScanLines();
-    void renderPlayAreaBackground();
     void renderPlayerAnimation();
     void renderPlayerPoint();
     void renderPlayerBullet();
@@ -104,17 +103,11 @@ private:
     void addBomb(int value);
     void addLife(int value);
 
-    //背景
-    void initScanLines();
-
-    //辅助
-    void showFPS();
-
     //读取文件
     void loadSceneData(const std::string& filename);
     void loadUI(const json& data);
     void loadItem(const json& data);
-    void loadBackground(const json& data);
+    void loadBackground(const json& dataBackground, const json& dataWorld);
 
     //游戏结束
     void gameOver();
@@ -149,24 +142,19 @@ private:
     bool isBomb = false;
     Bomb* bomb = nullptr;
 
-    
 
     int margin = 32;
 
     Background background;
     PlayArea playarea;
 
-    //背景配置（由 scene_main.json 的 backgrround 字段加载）
-    float bg_sBottom = 0.5f;   // 底部纵向采样纹素量（<1 近处放大）
-    int bg_copies = 16;        // 贴图纵向平铺份数
-    int bg_stripX = 200;       // playarea2 条带起始列（光照遮罩采样起点）
-
-    //new
-    SDL_Texture* playerArea1 = nullptr;
-    SDL_Texture* playerArea2 = nullptr;
+    // === AI 实现：伪3D背景 ===
+    Pseudo3DBackground pseudo3DBg;
 
     Player player;
     PlayerPoint playerPoint;
+    Enemy* playerBulletTarget = nullptr;
+    Boss* playerBulletBossTarget = nullptr;
     bool isDead = false;//玩家是否死亡
     bool invincible = false;//玩家是否无敌
     float invincibleTimer = 0.0f;

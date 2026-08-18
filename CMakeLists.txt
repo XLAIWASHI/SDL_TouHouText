@@ -58,6 +58,7 @@ add_executable(${TARGET}
                 "src/Effect.cpp"
                 "src/EffectManager.cpp"
                 "src/Bomb.cpp"
+                "src/Pseudo3DBackground.cpp"
                 "src/SceneEnd.cpp")
 
 #链接库

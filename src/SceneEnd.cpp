@@ -20,7 +20,7 @@ void SceneEnd::init()
 {
     loadEndfile("data\\end.json");
 
-    background.texture = IMG_LoadTexture(game.getRenderer(), "assets\\image\\end\\loading00h.png");
+    background.texture = IMG_LoadTexture(game.getRenderer(), "assets\\image\\end\\result.jpg");
     if(background.texture == nullptr)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load end_background: %s", IMG_GetError());
@@ -175,7 +175,7 @@ void SceneEnd::loadEndfile(const std::string& filename)
         int w = static_cast<int>(eit.src.w * 3);
         int h = static_cast<int>(eit.src.h * 3);
         eit.dst = {
-            static_cast<int>(game.getWindowWidth() / 2 - w),
+            static_cast<int>(game.getWindowWidth() / 2) - static_cast<int>(w / 2),
             static_cast<int>(game.getWindowHeight() * 0.10f),
             w,
             h
