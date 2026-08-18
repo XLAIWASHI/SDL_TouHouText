@@ -78,22 +78,22 @@ private:
     // 相机参数
     float cameraHeight = 0.0f; // 相机高度
     float focal = 0.0f; // 焦距，透视投影缩放倍数
-    float horizonY = 0.0f;   // 屏幕坐标（已含游玩区偏移，setConfig 里换算）
+    float horizonY = 0.0f; // 地平线高度
 
     // 世界参数
-    float halfWidth = 0.0f;
-    float zNear = 0.0f;
-    float zFar = 0.0f;
-    float wallHeight = 0.0f;
+    float halfWidth = 0.0f; // 地面半宽
+    float zNear = 0.0f; // 最近距离
+    float zFar = 0.0f; // 最远距离
+    float wallHeight = 0.0f; // 墙高度
 
     // 渲染参数
-    int zSegments = 0;
-    float scrollSpeed = 0.0f;
-    float vTiles = 0.0f;       // 地板深度方向纹理平铺次数
-    float scrollZ = 0.0f;      // 累计滚动（世界单位）
+    int zSegments = 0; // 段数
+    float scrollSpeed = 0.0f; // 移动速度
+    float vTiles = 0.0f; // 地板深度方向纹理平铺次数
+    float scrollZ = 0.0f; // 累计滚动（世界单位）
 
     SDL_Rect playAreaRect{0, 0, 0, 0};
-    float centerX = 0.0f;
+    float centerX = 0.0f; // 屏幕中心
 
     Surface floor;
     Surface wallLeft;

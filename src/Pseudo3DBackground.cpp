@@ -67,13 +67,13 @@ void Pseudo3DBackground::setConfig(float cameraHeight_, float focal_, float hori
     );
 }
 
-// --- 每帧滚动 -------------------------------------------------------
+// 每帧滚动
 void Pseudo3DBackground::update(float deltaTime)
 {
     scrollZ += scrollSpeed * deltaTime;
 }
 
-// --- 渲染 -----------------------------------------------------------
+// 渲染
 void Pseudo3DBackground::render(SDL_Renderer* renderer)
 {
     if (texture == nullptr) return;
@@ -102,7 +102,7 @@ void Pseudo3DBackground::render(SDL_Renderer* renderer)
     SDL_RenderSetClipRect(renderer, nullptr);
 }
 
-// --- 清理 -----------------------------------------------------------
+// 清理
 void Pseudo3DBackground::clean()
 {
     if (texture != nullptr)
@@ -112,7 +112,7 @@ void Pseudo3DBackground::clean()
     }
 }
 
-// --- 世界坐标 -> 屏幕坐标 ---------------------------------------------
+// 世界坐标 -> 屏幕坐标
 SDL_FPoint Pseudo3DBackground::project(float x, float y, float z) const
 {
     SDL_FPoint p;
@@ -125,24 +125,28 @@ SDL_FPoint Pseudo3DBackground::project(float x, float y, float z) const
 void Pseudo3DBackground::buildFloor()
 {
     int rows = zSegments + 1;
-    int vertCount = rows * 2;
+    int vertCount = rows * 2; // 顶点个数
 
-    floor.screen.resize(vertCount);
-    floor.worldZ.resize(vertCount);
-    floor.texU.resize(vertCount);
-    floor.indices.clear();
+    floor.screen.resize(vertCount); // 存每个顶点最终在屏幕上的位置
+    floor.worldZ.resize(vertCount); // 存每个顶点对应一个 z
+    floor.texU.resize(vertCount); // 存每个顶点对应的纹理 u 坐标
+    floor.indices.clear(); // 将之前的三角形索引清空
 
     // 纹理 u：左 -> 右（对应地板 src 的 x 范围）
+    // 把纹理的横向从左到右建立一个坐标轴，最左边是 u=0，最右边是最大值，中间的位置就对应中间的 u
     float u0 = static_cast<float>(floor.src.x);
     float u1 = static_cast<float>(floor.src.x + floor.src.w);
 
     // 深度按 1/z 线性分布，让屏幕上的分段更均匀（近处密、远处疏）
     float invZNear = 1.0f / zNear;
     float invZFar = 1.0f / zFar;
-
+    
+    // 从最近到最远，一排一排地生成地板顶点
     for (int i = 0; i < rows; i++)
     {
+        // 把当前第几排转换成 0~1 的比例
         float t = static_cast<float>(i) / zSegments;
+        // 当前这一行顶点应该放在哪个 z 深度
         float z = 1.0f / (invZNear * (1.0f - t) + invZFar * t);
 
         // 左顶点
@@ -173,7 +177,7 @@ void Pseudo3DBackground::buildFloor()
 void Pseudo3DBackground::buildWall(Surface& s, float x, float u0, float u1)
 {
     int rows = zSegments + 1;
-    int vertCount = rows * 2;
+    int vertCount = rows * 2; // 顶点个数
 
     s.screen.resize(vertCount);
     s.worldZ.resize(vertCount);
@@ -210,7 +214,7 @@ void Pseudo3DBackground::buildWall(Surface& s, float x, float u0, float u1)
     }
 }
 
-// --- 渲染一个面 ------------------------------------------------------
+// 渲染一个面
 void Pseudo3DBackground::renderSurface(SDL_Renderer* renderer, Surface& s)
 {
     

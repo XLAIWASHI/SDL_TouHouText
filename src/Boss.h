@@ -30,8 +30,12 @@ public:
     SDL_FPoint getBossPos() { return position; }
     int getHealth() { return health; }
     bool isBossDead() { return isDead; }
-    void setDead() { isDead = true; }
+    bool getStageDefeated() { return stageDefeated; }
 
+    //setting
+    void setDead() { isDead = true; }
+    void setStageDefeated(bool f) { stageDefeated = f; }
+    
     //随机移动
     void randomMove();
     void startAttackAnimation();
@@ -86,6 +90,8 @@ private:
     int play_w = 0;
     int play_h = 0;
     int margin = 32;
+
+    bool stageDefeated = false;
 };
 
 

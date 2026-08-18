@@ -21,7 +21,7 @@ SceneMain::~SceneMain()
 
 void SceneMain::init()
 {
-    game.playBGM("assets\\music\\bgm\\th08_09.mid");
+    game.playBGM("assets\\music\\bgm\\th08-06.wav");
     game.loadHighScore();
     //导入波次表
     loadWavesFromFile("data\\waves.json");
@@ -169,9 +169,8 @@ void SceneMain::update(float deltaTime)
     keyboardControl(deltaTime);
     //更新游玩区
     updatePlayArea(deltaTime);
-    // === AI 实现开始：伪3D背景滚动 ===
+    //伪3D背景滚动
     pseudo3DBg.update(deltaTime);
-    // === AI 实现结束 ===
     //更新玩家
     updatePlayer(deltaTime);
     //更新敌人
@@ -189,6 +188,16 @@ void SceneMain::update(float deltaTime)
     {
         boss->update(deltaTime);
         ColliderBossBullet();
+        if(boss->getStageDefeated())
+        {
+            boss->setStageDefeated(false);
+            game.playSound(game.getSounds()["enep00"], -1);
+            addScore(30);
+            for(int i = 0; i < 10; i++)
+            {
+                dropItem(boss->getBossPosition());
+            }
+        }
         if(!boss->isBossDead())
         {
             ColliderBoss();
@@ -632,8 +641,6 @@ void SceneMain::updatePlayerBullet(float deltaTime)
                 // 寻找最近敌人
                 for(Enemy* enemy : Enemies)
                 {
-                    if(enemy->position.y >= player.position.y)
-                        continue;
                     if(enemy->health <= 0)
                         continue;
 
@@ -700,7 +707,7 @@ void SceneMain::updatePlayerBullet(float deltaTime)
                         dy / len
                     };
 
-                    float smooth = 0.08f;
+                    float smooth = 0.5f;
 
                     bullet->direction.x += 
                         (targetDir.x - bullet->direction.x) * smooth;
@@ -764,7 +771,6 @@ void SceneMain::updatePlayerBullet(float deltaTime)
             if(SDL_HasIntersection(&bulletRect, &enemyRect))
             {
                 enemy->health -= bullet->damage;
-
                 delete bullet;
                 it = PlayerBullets.erase(it);
                 hit = true;
@@ -784,7 +790,6 @@ void SceneMain::updatePlayerBullet(float deltaTime)
             if(SDL_HasIntersection(&bulletRect, &bossRect))
             {
                 boss->takeDamage(bullet->damage);
-
                 delete bullet;
                 it = PlayerBullets.erase(it);
                 hit = true;
@@ -887,7 +892,7 @@ void SceneMain::updateEnemiesBullet(float deltaTime)
 void SceneMain::shootPlayer()
 {
 
-    game.playSound(game.getSounds()["plst"], -1);
+    game.playSound(game.getSounds()["plst"], -1, 30);
 
     PlayerBullet* bullet2L = new PlayerBullet();
     PlayerBullet* bullet1L = new PlayerBullet();
@@ -938,14 +943,14 @@ void SceneMain::shootBomb()
     {
         return;
     }
-    game.playSound(game.getSounds()["gun"], -1);
+    game.playSound(game.getSounds()["gun"], -1, 45);
     isBomb = true;
     bomb = new Bomb(player.position);
 }
 
 void SceneMain::shootEnemy(Enemy* enemy, SDL_FPoint offset)
 {
-    game.playSound(game.getSounds()["tan"], -1, 10);
+    game.playSound(game.getSounds()["tan"], -1, 3);
     EnemyBullet* bullet = new EnemyBullet();
     if(enemy->currentEnemyType == EnemyType::enemyBase1)
     {
@@ -1498,6 +1503,7 @@ void SceneMain::spawnBoss(BossType type, float x, float y)
     {
         return;
     }
+    game.playBGM("assets\\music\\bgm\\th08-07.wav");
     boss = new Boss(game.getPlayAreaWidth(), game.getPlayAreaHeight(), margin);
     if(!boss->init(BossTextureManager["boss1"], x, y))
     {
@@ -2015,7 +2021,7 @@ bool SceneMain::ColliderItems(Item *item)
         if(SDL_HasIntersection(&playerPointRect, &itemRect))
         {
             //音效
-            game.playSound(game.getSounds()["item"], -1);
+            game.playSound(game.getSounds()["item"], -1, 50);
 
             //item效果
             if(item->type == ItemType::point)
@@ -2056,7 +2062,7 @@ bool SceneMain::ColliderItems(Item *item)
 void SceneMain::enemyExplode(Enemy *enemy)
 {
     //播放音效
-    game.playSound(game.getSounds()["enep00"], -1);
+    game.playSound(game.getSounds()["enep00"], -1, 30);
 
     SDL_FPoint position = {
         static_cast<int>(enemy->position.x) + static_cast<int>(enemy->width / 2),
@@ -2087,9 +2093,8 @@ void SceneMain::playerTakeDamage(int damage)
         return;
     }
 
-    game.playSound(game.getSounds()["pldead"], -1);
+    game.playSound(game.getSounds()["pldead"], -1, 45);
 
-    
     //播放特效
     SDL_FPoint position = {
         static_cast<int>(player.position.x) + static_cast<int>(player.width / 2),
@@ -2101,5 +2106,4 @@ void SceneMain::playerTakeDamage(int damage)
     player.currentHealth -= damage;
     isDeadInterval = true;
     deadIntervalTime = 0.0f;
-    
 }

@@ -13,7 +13,7 @@ void SceneTitle::init()
     //加载optionitem.json
     loadTitleItemFile();
     // bgm = Mix_LoadMUS("assets/music/bgm/Evan Call - The Magic Within.mp3");
-    game.playBGM("assets\\music\\bgm\\th08_01.mid");
+    game.playBGM("assets\\music\\bgm\\th08-01.wav");
 
     //加载背景图片
     background.texture = IMG_LoadTexture(game.getRenderer(), "assets\\image\\title\\star.png");

@@ -77,7 +77,7 @@ void BulletPattern::shootDirection(BulletManager &manager, SDL_FPoint position, 
 
 void BulletPattern::createBullet(BulletManager &manager, SDL_FPoint position, SDL_FPoint direction, BulletType type)
 {
-    game.playSound(game.getSounds()["tan"], -1, 10);
+    game.playSound(game.getSounds()["tan"], -1, 3);
     EnemyBullet* bullet = new EnemyBullet();
     bullet->direction = direction;
     int colorIdx = 1 + (rand() % 4);
