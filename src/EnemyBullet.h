@@ -16,7 +16,7 @@ public:
     int damage = 1;
     float timer = 0.0f;
     float lifeTimer = 0.0f;//已经存活的时间
-    float lifeTime = 6.0f;
+    float lifeTime = 4.5f;
     BulletType type = BulletType::granBlue; 
     EnemyType enemyType = EnemyType::enemyBase1;
 };

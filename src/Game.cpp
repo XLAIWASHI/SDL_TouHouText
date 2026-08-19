@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "SceneTitle.h"
 #include "SceneMain.h"
+#include "SceneEnd.h"
 #include <nlohmann/json.hpp>
 #include <iostream>
 
@@ -22,6 +23,30 @@ void Game::saveSetting()
     else
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to save settings.json");
+    }
+}
+
+void Game::loadHighScore()
+{
+    std::ifstream file("data\\hiscore.json");
+    if(file.is_open())
+    {
+        json data;
+        file >> data;
+        hiScore = data.value("hiScore", 0);
+    }
+}
+
+void Game::saveHighScore(int score)
+{
+    if(score <= hiScore) return;
+    hiScore = score;
+    json data;
+    data["hiScore"] = hiScore;
+    std::ofstream file("data\\hiscore.json");
+    if(file.is_open())
+    {
+        file << data.dump(4);
     }
 }
 
@@ -199,11 +224,13 @@ void Game::init()
     sounds["pldead"] = Mix_LoadWAV("assets\\music\\sound\\se_pldead00.wav");
     sounds["enep00"] = Mix_LoadWAV("assets\\music\\sound\\se_enep00.wav");
     sounds["enep01"] = Mix_LoadWAV("assets\\music\\sound\\se_enep01.wav");
+    sounds["gun"] = Mix_LoadWAV("assets\\music\\sound\\se_gun00.wav");
+    sounds["item"] = Mix_LoadWAV("assets\\music\\sound\\se_item00.wav");
 
     //载入setting.json
     loadSetting();
 
-    currentScene = new SceneTitle;
+    currentScene = new SceneTitle();
     currentScene->init();
 
     //设置音效channel数量

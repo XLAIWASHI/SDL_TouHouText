@@ -53,6 +53,14 @@ void Boss1Fight::changeStage(Boss1Stage newStage)
     case Boss1Stage::Dead:    exitDead();    break;
     default: break;
     }
+    
+    // 旧阶段被击败
+    if (stage == Boss1Stage::Pattern1 ||
+        stage == Boss1Stage::Pattern2 ||
+        stage == Boss1Stage::Pattern3)
+    {
+        boss->setStageDefeated(true);
+    }
 
     stage = newStage;
     stageTimer = 0;
@@ -344,6 +352,8 @@ void Boss1Fight::updatePattern3(float deltaTime, BulletManager &manager, SDL_FPo
     int dmg = p3HealthAtStart - boss->getHealth();
     if(dmg >= 1500 || boss->getHealth() <= 0)
     {
+        game.playSound(game.getSounds()["enep01"], -1);
+        effectManager.addEffect(bossPos, EffectType::enemyDead);
         boss->setDead();
         changeStage(Boss1Stage::Dead);
         return;
@@ -473,7 +483,7 @@ void Boss1Fight::updatePattern3(float deltaTime, BulletManager &manager, SDL_FPo
         break;
 
     case Pattern3SubPhase::Done:
-        game.playSound(game.getSounds()["enep01"], -1);
+        game.playSound(game.getSounds()["enep01"], -1, 60);
         effectManager.addEffect(bossPos, EffectType::enemyDead);
         boss->setDead();
         changeStage(Boss1Stage::Dead);

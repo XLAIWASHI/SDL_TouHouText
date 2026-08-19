@@ -1,13 +1,105 @@
 {
     "waves": [
         {
-            "duration": 10,
+            "duration": 19,
             "waitClear": false,
             "spawns": [
-                {"type": "enemy" ,"enemyType": "enemyBase1", "delay": 0.0, "posX": 0.5, "posY": 0.0, "dirX": 0, "dirY": 1},
-                {"type": "enemy" ,"enemyType": "enemyBase1", "delay": 2.0, "posX": 1.0, "posY": 0.0, "dirX": -1, "dirY": 1},
-                {"type": "enemy" ,"enemyType": "enemyBase1", "delay": 4.0, "posX": 0.2, "posY": 0.0, "dirX": 1, "dirY": 1},
-                {"type": "enemy" ,"enemyType": "enemyBase1", "delay": 4.0, "posX": 0.5, "posY": 0.0, "dirX": 1, "dirY": 1}
+                {"type":"enemy","enemyType":"enemyBase2","delay":0.0,"posX":0.2,"posY":0.0,"dirX":1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase2","delay":0.0,"posX":0.35,"posY":0.0,"dirX":1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase1","delay":0.0,"posX":0.5,"posY":0.0,"dirX":0,"dirY":1},
+
+                {"type":"enemy","enemyType":"enemyBase2","delay":2.5,"posX":0.65,"posY":0.0,"dirX":-1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase2","delay":2.5,"posX":0.8,"posY":0.0,"dirX":-1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase3","delay":2.5,"posX":0.5,"posY":0.0,"dirX":0,"dirY":1},
+
+                {"type":"enemy","enemyType":"enemyBase3","delay":5.0,"posX":0.35,"posY":0.0,"dirX":0,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase3","delay":5.0,"posX":0.5,"posY":0.0,"dirX":0,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase3","delay":5.0,"posX":0.65,"posY":0.0,"dirX":0,"dirY":1},
+
+                {"type":"enemy","enemyType":"enemyBase2","delay":8.0,"posX":0.15,"posY":0.0,"dirX":1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase2","delay":8.0,"posX":0.3,"posY":0.0,"dirX":1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase2","delay":8.0,"posX":0.7,"posY":0.0,"dirX":-1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase2","delay":8.0,"posX":0.85,"posY":0.0,"dirX":-1,"dirY":1},
+
+                {"type":"enemy","enemyType":"enemyBase4","delay":11.5,"posX":0.35,"posY":0.0,"dirX":0,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase4","delay":11.5,"posX":0.65,"posY":0.0,"dirX":0,"dirY":1},
+
+                {"type":"enemy","enemyType":"enemyBase2","delay":15.0,"posX":0.25,"posY":0.0,"dirX":1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase2","delay":15.0,"posX":0.5,"posY":0.0,"dirX":0,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase2","delay":15.0,"posX":0.75,"posY":0.0,"dirX":-1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase3","delay":15.0,"posX":0.35,"posY":0.0,"dirX":0,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase3","delay":15.0,"posX":0.65,"posY":0.0,"dirX":0,"dirY":1}
+            ]
+        },
+        {
+            "duration": 19,
+            "waitClear": false,
+            "spawns": [
+                {"type":"enemy","enemyType":"enemyBase2","delay":0.0,"posX":0.15,"posY":0.0,"dirX":1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase2","delay":0.0,"posX":0.3,"posY":0.0,"dirX":1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase2","delay":0.0,"posX":0.7,"posY":0.0,"dirX":-1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase2","delay":0.0,"posX":0.85,"posY":0.0,"dirX":-1,"dirY":1},
+
+                {"type":"enemy","enemyType":"enemyBase3","delay":2.5,"posX":0.3,"posY":0.0,"dirX":0,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase3","delay":2.5,"posX":0.5,"posY":0.0,"dirX":0,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase3","delay":2.5,"posX":0.7,"posY":0.0,"dirX":0,"dirY":1},
+
+                {"type":"enemy","enemyType":"enemyBase4","delay":5.0,"posX":0.2,"posY":0.0,"dirX":1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase4","delay":5.0,"posX":0.8,"posY":0.0,"dirX":-1,"dirY":1},
+
+                {"type":"enemy","enemyType":"enemyBase2","delay":7.5,"posX":0.1,"posY":0.0,"dirX":1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase2","delay":7.5,"posX":0.25,"posY":0.0,"dirX":1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase2","delay":7.5,"posX":0.75,"posY":0.0,"dirX":-1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase2","delay":7.5,"posX":0.9,"posY":0.0,"dirX":-1,"dirY":1},
+
+                {"type":"enemy","enemyType":"enemyBase3","delay":10.5,"posX":0.25,"posY":0.0,"dirX":0,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase3","delay":10.5,"posX":0.75,"posY":0.0,"dirX":0,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase4","delay":10.5,"posX":0.4,"posY":0.0,"dirX":0,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase4","delay":10.5,"posX":0.6,"posY":0.0,"dirX":0,"dirY":1},
+
+                {"type":"enemy","enemyType":"enemyBase2","delay":14.0,"posX":0.2,"posY":0.0,"dirX":1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase2","delay":14.0,"posX":0.5,"posY":0.0,"dirX":0,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase2","delay":14.0,"posX":0.8,"posY":0.0,"dirX":-1,"dirY":1},
+
+                {"type":"enemy","enemyType":"enemyBase4","delay":17.0,"posX":0.5,"posY":0.0,"dirX":0,"dirY":1}
+            ]
+        },
+        {
+            "duration": 20,
+            "waitClear": false,
+            "spawns": [
+                {"type":"enemy","enemyType":"enemyBase2","delay":0.0,"posX":0.1,"posY":0.0,"dirX":1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase2","delay":0.0,"posX":0.3,"posY":0.0,"dirX":1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase2","delay":0.0,"posX":0.7,"posY":0.0,"dirX":-1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase2","delay":0.0,"posX":0.9,"posY":0.0,"dirX":-1,"dirY":1},
+
+                {"type":"enemy","enemyType":"enemyBase3","delay":2.0,"posX":0.25,"posY":0.0,"dirX":0,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase3","delay":2.0,"posX":0.5,"posY":0.0,"dirX":0,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase3","delay":2.0,"posX":0.75,"posY":0.0,"dirX":0,"dirY":1},
+
+                {"type":"enemy","enemyType":"enemyBase4","delay":4.5,"posX":0.2,"posY":0.0,"dirX":1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase4","delay":4.5,"posX":0.5,"posY":0.0,"dirX":0,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase4","delay":4.5,"posX":0.8,"posY":0.0,"dirX":-1,"dirY":1},
+
+                {"type":"enemy","enemyType":"enemyBase2","delay":7.0,"posX":0.1,"posY":0.0,"dirX":1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase2","delay":7.0,"posX":0.25,"posY":0.0,"dirX":1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase2","delay":7.0,"posX":0.5,"posY":0.0,"dirX":0,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase2","delay":7.0,"posX":0.75,"posY":0.0,"dirX":-1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase2","delay":7.0,"posX":0.9,"posY":0.0,"dirX":-1,"dirY":1},
+
+                {"type":"enemy","enemyType":"enemyBase4","delay":10.0,"posX":0.25,"posY":0.0,"dirX":1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase4","delay":10.0,"posX":0.75,"posY":0.0,"dirX":-1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase3","delay":10.0,"posX":0.4,"posY":0.0,"dirX":0,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase3","delay":10.0,"posX":0.6,"posY":0.0,"dirX":0,"dirY":1},
+
+                {"type":"enemy","enemyType":"enemyBase3","delay":13.5,"posX":0.2,"posY":0.0,"dirX":1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase3","delay":13.5,"posX":0.4,"posY":0.0,"dirX":0,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase3","delay":13.5,"posX":0.6,"posY":0.0,"dirX":0,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase3","delay":13.5,"posX":0.8,"posY":0.0,"dirX":-1,"dirY":1},
+
+                {"type":"enemy","enemyType":"enemyBase4","delay":17.0,"posX":0.2,"posY":0.0,"dirX":1,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase4","delay":17.0,"posX":0.5,"posY":0.0,"dirX":0,"dirY":1},
+                {"type":"enemy","enemyType":"enemyBase4","delay":17.0,"posX":0.8,"posY":0.0,"dirX":-1,"dirY":1}
             ]
         },
         {

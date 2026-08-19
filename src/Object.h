@@ -73,7 +73,10 @@ enum class BossMoveType
 
 enum class ItemType
 {
-    
+    point,
+    power,
+    bomb,
+    life
 };
 
 enum class TitleButtonType
@@ -91,6 +94,28 @@ enum class OptionButtonType
     mode,
     quit,
     COUNT
+};
+
+enum class UiItemType
+{
+    hiScore,
+    score,
+    player,
+    spell,
+    health,
+    bomb,
+    title
+};
+
+enum class EndItemType
+{
+    finishScore,
+};
+
+enum class playAreaType
+{
+    floor,
+    wall
 };
 
 struct Settings
@@ -116,6 +141,21 @@ struct TitleItem
     SDL_Rect dst;
 };
 
+struct UiItem
+{
+    UiItemType type;
+    SDL_Rect src;
+    SDL_Rect dst;
+    std::vector<UiItem> variants;
+};
+
+struct EndItem
+{
+    EndItemType type;
+    SDL_Rect src;
+    SDL_Rect dst;
+};
+
 struct Player
 {
     SDL_Texture* texture = nullptr;
@@ -125,10 +165,14 @@ struct Player
     int BaseSpeed = 400;
     Uint32 cooldown = 100;
     Uint32 lastShootTime = 0;
-    int currentHealth = 10;
-    int lastHealth = 10;
-    const int maxHealth = 10;
+    int currentHealth = 5;
+    int lastHealth = 5;
+    const int maxHealth = 5;
     int currentFrame = 0;
+    const int maxBomb = 3;
+    int currentBomb = 3;
+    Uint32 bombCooldown = 500;
+    Uint32 lastBombTime = 0;
     int totalFrame = 0;
     Uint32 starTime = 0;
     Uint32 FPS = 15;
@@ -195,9 +239,24 @@ struct Title
     int height = 0;
 };
 
+struct Vec3
+{
+    float x;
+    float y;
+    float z;
+};
+
 struct PlayArea
 {
     SDL_Texture* texture = nullptr;
+    playAreaType type;
+    SDL_Rect src;
+
+    // 3D world veritces
+    Vec3 vertices[4];
+
+    // old 2D data
+    SDL_Rect dst;
     SDL_FPoint position = {0.0f, 0.0f};
     float offset = 0.0f;
     int width = 0;
@@ -207,14 +266,13 @@ struct PlayArea
 
 struct Item
 {
-    SDL_Texture* texture = nullptr;
+    ItemType type;
+    SDL_Rect src;
+    SDL_Rect dst;
     SDL_FPoint position = {0.0f, 0.0f};
-    SDL_FPoint direction = {0.0f, 0.0f};
-    int w = 0;
-    int h = 0;
-    int speed = 400;
-
-
+    SDL_FPoint velocity = {0.0f, 0.0f};
+    int w = 16;
+    int h = 16;
 };
 
 #endif

@@ -56,7 +56,10 @@ add_executable(${TARGET}
                 "src/BossfightController.cpp"
                 "src/BulletSkill.cpp"
                 "src/Effect.cpp"
-                "src/EffectManager.cpp")
+                "src/EffectManager.cpp"
+                "src/Bomb.cpp"
+                "src/Pseudo3DBackground.cpp"
+                "src/SceneEnd.cpp")
 
 #链接库
 target_link_libraries(${TARGET}

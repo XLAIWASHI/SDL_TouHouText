@@ -1,0 +1,61 @@
+{
+    "uiItem": [
+        {"type": "hiScore", "src": {"x": 0, "y": 80, "w": 64, "h": 16}, "_comment": "历史最高得分"},
+        {"type": "score", "src": {"x": 0, "y": 96, "w": 48, "h": 16}, "_comment": "当前得分"},
+        {
+            "type": "player",
+            "src": {"x": 0, "y": 112, "w": 48, "h": 16},
+            "variants": [
+                {"type": "health", "src": {"x": 64, "y": 80, "w": 16, "h": 16}}
+            ],
+            "_comment": "玩家血量"
+        },
+        {
+            "type": "spell",
+            "src": {"x": 0, "y": 128, "w": 48, "h": 16},
+            "variants": [
+                {"type": "bomb", "src": {"x": 80, "y": 80, "w": 16, "h": 16}}
+            ],
+            "_comment": "Bomb个数"
+        },
+        {"type": "title", "src": {"x": 128, "y": 16, "w": 128, "h": 240}, "_comment": "标题"}
+    ],
+    "item": [
+        {"type": "point", "src": {"x": 16, "y": 64, "w": 16, "h": 16}, "_comment": "点符"},
+        {"type": "power", "src": {"x": 0, "y": 64, "w": 16, "h": 16}, "_comment": "p点"},
+        {"type": "bomb", "src": {"x": 48, "y": 64, "w": 16, "h": 16}, "_comment": "bomb"},
+        {"type": "life", "src": {"x": 80, "y": 64, "w": 16, "h": 16}, "_comment": "life"}
+    ],
+    "score": {
+        "startX": 0,
+        "startY": 48,
+        "width": 16,
+        "height": 16,
+        "_comment": "0-9的数字"
+    },
+    "digits": {
+        "offset_startX": 10,
+        "offset_startY": 10,
+        "offset": 30,
+        "mult": 2.5
+    },
+    "background": [
+        {"type": "floor", "src": {"x": 256, "y": 0, "w": 256, "h": 256}, "_comment": "地板"},
+        {"type": "wall", "src": {"x": 0, "y": 0, "w": 256, "h": 256}, "_comment": "墙壁"}
+    ],
+    "world": {
+        "cameraHeight": 1.0,
+        "focal": 650,
+        "horizonY": 120,
+        "wallHeight": 1.5,
+        "zSegments": 40,
+        "scrollSpeed": 1.0,
+        "vTiles": 8.0,
+        "floor": {
+            "y": 0,
+            "halfWidth": 0.45,
+            "zNear": 0.95,
+            "zFar": 110.0
+        }
+    }
+}
