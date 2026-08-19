@@ -2,16 +2,12 @@
 #include <SDL_image.h>
 #include <cmath>
 
-// ====================================================================
-// === AI 实现：伪 3D 背景类 ===========================================
-// ====================================================================
-
 Pseudo3DBackground::~Pseudo3DBackground()
 {
     clean();
 }
 
-// --- 加载纹理 -------------------------------------------------------
+// 加载纹理
 void Pseudo3DBackground::init(SDL_Renderer* renderer, const std::string& texturePath)
 {
     clean();
@@ -189,6 +185,8 @@ void Pseudo3DBackground::buildWall(Surface& s, float x, float u0, float u1)
 
     for (int i = 0; i < rows; i++)
     {
+        // 生成每一排网格顶点对应的 z 深度，并且让近处的网格更密、远处更稀
+        // 这个是生成一个 0~1之间的比例。
         float t = static_cast<float>(i) / zSegments;
         float z = 1.0f / (invZNear * (1.0f - t) + invZFar * t);
 
@@ -224,6 +222,7 @@ void Pseudo3DBackground::renderSurface(SDL_Renderer* renderer, Surface& s)
     s.verts.resize(n);
 
     // 一个纹理平铺对应的世界深度
+    // 每经过tileDepth个世界距离，纹理重复一次。
     float tileDepth = (zFar - zNear) / vTiles;
 
     int texW, texH;
@@ -236,8 +235,10 @@ void Pseudo3DBackground::renderSurface(SDL_Renderer* renderer, Surface& s)
         &texH
     );
 
+    // 循环每个顶点
     for (int i = 0; i < n; i++)
     {
+        // 现在应该取图片哪个高度
         float v = static_cast<float>(s.src.y) 
                 + fmodf(
                     (s.worldZ[i] + scrollZ - zNear)
@@ -246,9 +247,10 @@ void Pseudo3DBackground::renderSurface(SDL_Renderer* renderer, Surface& s)
                 );
 
         s.verts[i].position = s.screen[i];
-        s.verts[i].color = {255, 255, 255, 255};
+        s.verts[i].color = {255, 255, 255, 255}; // 表示不要改变纹理颜色
 
         // 这里改
+        // 这个屏幕上的顶点，应该去图片的哪个位置取颜色
         s.verts[i].tex_coord =
         {
             s.texU[i] / texW,

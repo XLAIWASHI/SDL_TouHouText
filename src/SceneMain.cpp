@@ -239,9 +239,8 @@ void SceneMain::render()
 {
     //渲染背景
     renderBackground();
-    // === AI 实现开始：伪3D背景渲染（替代旧的 renderPlayArea） ===
+    // 伪3D背景渲染
     pseudo3DBg.render(game.getRenderer());
-    // === AI 实现结束 ===
     //渲染敌人
     renderEnemies();
     if(boss != nullptr)
@@ -284,9 +283,8 @@ void SceneMain::clean()
     {
         SDL_DestroyTexture(playarea.texture);
     }
-    // === AI 实现开始：伪3D背景清理 ===
+    // 伪3D背景清理
     pseudo3DBg.clean();
-    // === AI 实现结束 ===
     //玩家
     if(player.texture != nullptr)
     {
