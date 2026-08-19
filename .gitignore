@@ -33,3 +33,6 @@ Thumbs.db
 # SDL2
 *.log
 screenshot_*.png
+
+DEV_LOG.md
+plan.md
